@@ -72,7 +72,7 @@ const HowWork: React.FC = () => {
                                     <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">Nossa equipe analisará a sua solicitação. Esse processo é ágil e você será informado(a) assim que tivermos uma resposta.</p>
                                 </div>
                                 <div className="flex flex-1 items-center [container-type:inline-size] max-lg:py-6 lg:pb-2">
-                                    <img className="h-[min(152px,40cqw)] object-cover object-center" src="https://tailwindui.com/plus/img/component-images/bento-03-security.png" alt="" />
+                                    <img className="h-[min(152px,40cqw)] object-cover object-center" src="https://tailwindcss.com/plus-assets/img/component-images/bento-03-security.png" alt="" />
                                 </div>
                             </div>
                             <div className="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5"></div>
