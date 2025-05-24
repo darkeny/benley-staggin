@@ -101,8 +101,8 @@ export function Home() {
         </Section>
       </div>
 
-           {/* MOBILE - Layout com janela à direita vertical */}
-           <div className="block md:hidden relative min-h-[70vh]">
+      {/* MOBILE - Layout com janela à direita vertical */}
+      <div className="block md:hidden relative min-h-[70vh]">
         <div
           className="absolute inset-0"
           style={{
@@ -114,7 +114,7 @@ export function Home() {
           <div className="absolute inset-0 bg-black bg-opacity-5"></div>
 
           {/* Janela transparente na direita */}
-          <div className="absolute top-0 py-3 bottom-100 right-0 w-[56%] bg-black bg-opacity-40 backdrop-blur-md p-4 me-3 flex flex-col justify-center gap-2 rounded-b-2xl shadow-lg text-white">
+          <div data-aos="fade-left" className="absolute top-0 py-3 bottom-100 right-0 w-[56%] bg-black bg-opacity-40 backdrop-blur-md p-4 me-3 flex flex-col justify-center gap-2 rounded-b-2xl shadow-lg text-white">
             {/* Título */}
             <h1 className="font-bold text-left">
               Group Benley Microcrédito,
@@ -128,18 +128,18 @@ export function Home() {
 
             {/* Botões empilhados */}
             <div className="flex flex-col gap-3">
-              <a
-                href="/loan"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg text-center shadow-md transition"
-              >
-                Solicitar Crédito
-              </a>
-              <a
-                href="/services"
-                className="bg-white bg-opacity-90 text-blue-800 hover:bg-opacity-100 text-sm font-semibold py-2 px-4 rounded-lg text-center shadow-md transition"
-              >
-                Fazer Poupança
-              </a>
+              <Link to="/loan">
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg text-center shadow-md transition">
+                  Solicitar Crédito
+                </button>
+              </Link>
+              <Link to="/services">
+                <button
+                  className="bg-white bg-opacity-90 text-blue-800 hover:bg-opacity-100 text-sm font-semibold py-2 px-4 rounded-lg text-center shadow-md transition">
+                  Fazer Poupança
+                </button>
+              </Link>
             </div>
           </div>
         </div>
