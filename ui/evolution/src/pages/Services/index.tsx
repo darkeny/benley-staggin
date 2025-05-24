@@ -16,7 +16,9 @@ const Services: React.FC = () => {
                 <Navbar />
             </div>
             <OurServices />
-            <CapitalSeguro />
+            <div className="hidden md:block">
+                <CapitalSeguro />
+            </div>
             <FinancialConsulting />
             <ForWhom />
             <WhyInvest />

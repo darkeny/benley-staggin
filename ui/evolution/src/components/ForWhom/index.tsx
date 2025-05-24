@@ -86,7 +86,7 @@ const ForWhom: React.FC = () => {
                     ))}
                 </div>
             </div>
-            <div className="text-center">
+            <div className="text-center pt-7">
                 <Link to={'/loan'}>
                     <a className="inline-block rounded-md bg-indigo-600 my-0 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-500">Solicitar crédito</a>
                 </Link>
