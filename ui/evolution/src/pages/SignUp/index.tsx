@@ -26,8 +26,8 @@ const SignUp: React.FC = () => {
         grantorName: "",
         grantorID: "",
         grantorContact: "",
-        imageFiles: [] as File[], // Adicionando imagens ao formData
-        pdfFiles: [] as File[], // Adicionando PDFs ao formData
+        // imageFiles: [] as File[], // Adicionando imagens ao formData
+        // pdfFiles: [] as File[], // Adicionando PDFs ao formData
     });
 
     const [showGrantorFields, setShowGrantorFields] = useState(false);
@@ -169,8 +169,8 @@ const SignUp: React.FC = () => {
                     grantorName: "",
                     grantorID: "",
                     grantorContact: "",
-                    imageFiles: [],
-                    pdfFiles: [],
+                    // imageFiles: [],
+                    // pdfFiles: [],
                 });
                 setSelectedBank("");
                 setShowGrantorFields(false);
@@ -199,8 +199,8 @@ const SignUp: React.FC = () => {
                     grantorName: "",
                     grantorID: "",
                     grantorContact: "",
-                    imageFiles: [],
-                    pdfFiles: [],
+                    // imageFiles: [],
+                    // pdfFiles: [],
                 });
                 setSelectedBank("");
                 setShowGrantorFields(false);
@@ -380,19 +380,22 @@ const SignUp: React.FC = () => {
 
 
                                 {/* Upload de Imagem */}
-                                <div className="relative">
+                                <div className="relative group">
                                     <label className="block text-sm font-medium text-gray-700">
                                         Foto do Bilhete de Identidade
                                     </label>
                                     <button
                                         type="button"
+                                        disabled
                                         onClick={() => imageInputRef.current?.click()}
-                                        className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-600 bg-white hover:bg-blue-50 focus:ring-2 focus:ring-blue-500"
+                                        className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-400 bg-gray-100 cursor-not-allowed relative"
                                     >
-                                        {formData.imageFiles.length > 0 ? "Imagem Carregada" : "Carregar Imagem"}
-                                        {formData.imageFiles.length > 0 && (
-                                            <IoCheckmarkDoneOutline className="h-6 w-6 inline ml-2 text-green-500" />
-                                        )}
+                                        Carregar Imagem
+                                        {/* Tooltip */}
+                                        <div className="absolute left-1/2 -top-12 -translate-x-1/2 hidden group-hover:block bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-3 py-2 z-10 w-72 shadow-md">
+                                            Campo em manutenção. Pode continuar com os demais campos e submeter.
+                                            Depois, envie-nos a imagem por email ou WhatsApp.
+                                        </div>
                                     </button>
                                     <input
                                         type="file"
@@ -401,23 +404,27 @@ const SignUp: React.FC = () => {
                                         multiple
                                         onChange={handleImageChange}
                                         className="hidden"
+                                        disabled
                                     />
                                 </div>
 
                                 {/* Upload de PDF */}
-                                <div className="relative">
+                                <div className="relative group">
                                     <label className="block text-sm font-medium text-gray-700">
                                         Comprovativo de rendimentos ou Extrato Bancário (PDF)
                                     </label>
                                     <button
                                         type="button"
+                                        disabled
                                         onClick={() => pdfInputRef.current?.click()}
-                                        className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-600 bg-white hover:bg-blue-50 focus:ring-2 focus:ring-blue-500"
+                                        className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-400 bg-gray-100 cursor-not-allowed relative"
                                     >
-                                        {formData.pdfFiles.length > 0 ? "PDF Carregado" : "Carregar PDF"}
-                                        {formData.pdfFiles.length > 0 && (
-                                            <IoCheckmarkDoneOutline className="h-6 w-6 inline ml-2 text-green-500" />
-                                        )}
+                                        Carregar PDF
+                                        {/* Tooltip */}
+                                        <div className="absolute left-1/2 -top-12 -translate-x-1/2 hidden group-hover:block bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-3 py-2 z-10 w-72 shadow-md">
+                                            Campo em manutenção. Pode continuar com os demais campos e submeter.
+                                            Depois, envie-nos o PDF por email ou WhatsApp.
+                                        </div>
                                     </button>
                                     <input
                                         type="file"
@@ -426,8 +433,10 @@ const SignUp: React.FC = () => {
                                         multiple
                                         onChange={handlePdfChange}
                                         className="hidden"
+                                        disabled
                                     />
                                 </div>
+
 
                             </div>
                         </div>
