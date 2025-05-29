@@ -54,7 +54,8 @@ const Customers: React.FC = () => {
 
     const deleteCustomer = async (id: string) => {
         try {
-            await axios.delete(`http://localhost:3001/ibuildCustomer/${id}`);
+            await axios.delete(`${apiUrl}/ibuildCustomer/${id}`);
+            
             setCustomers(customers.filter(customer => customer.id !== id));
         } catch (error) {
             setAlertText("Cliente possui um empréstimo ativo e não pode ser excluído.");
