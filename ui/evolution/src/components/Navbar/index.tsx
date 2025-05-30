@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
+import { CiLogin } from "react-icons/ci";
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -37,7 +38,7 @@ const Navbar: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Mobile menu button and sign up button */}
+                        {/* Mobile menu button */}
                         <div className="absolute inset-y-0 right-0 flex items-center sm:hidden">
                             <div className="relative flex items-center space-x-4">
                             </div>
@@ -55,10 +56,11 @@ const Navbar: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Right Logo and Sign up button for larger screens */}
+                        {/* Right Sign Up Button for larger screens */}
                         <div className="hidden sm:flex absolute inset-y-0 right-0 items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                             <div className="relative flex items-center space-x-4">
-                                <button onClick={handleRedirect} className='rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'>
+                                <button onClick={handleRedirect} className='flex items-center gap-2 rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'>
+                                    <CiLogin size={18} />
                                     Inscreva-se
                                 </button>
                             </div>
@@ -75,7 +77,8 @@ const Navbar: React.FC = () => {
                             <NavLink to="/services" className={({ isActive }) => `block text-sm font-normal leading-6 px-3 py-2 ${isActive ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-900 hover:text-blue-500'} whitespace-nowrap`}>Serviços</NavLink>
                             <NavLink to="/howabout" className={({ isActive }) => `block text-sm font-normal leading-6 px-3 py-2 ${isActive ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-900 hover:text-blue-500'} whitespace-nowrap`}>Como Funciona</NavLink>
                             <NavLink to="/contact" className={({ isActive }) => `block text-sm font-normal leading-6 px-3 py-2 ${isActive ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-900 hover:text-blue-500'} whitespace-nowrap`}>Contactos</NavLink>
-                            <button onClick={handleRedirect} className='block w-full text-left rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'>
+                            <button onClick={handleRedirect} className='flex items-center gap-2 w-full text-left rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'>
+                                <CiLogin size={18} />
                                 Inscreva-se
                             </button>
                         </div>
