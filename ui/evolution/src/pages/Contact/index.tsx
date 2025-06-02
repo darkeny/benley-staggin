@@ -63,7 +63,7 @@ const Contact: React.FC = () => {
                     <div data-aos="zoom-in" className="mx-auto max-w-8xl sm:px-10 sm:py-32 lg:px-8">
                         <div className="relative isolate overflow-hidden bg-slate-100 px-6 py-5 shadow-2xl sm:rounded-3xl sm:px-16 md:pt-24 lg:flex lg:gap-x-20 lg:px-24 lg:pt-0">
                             <div className="mx-auto max-w-md text-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">
-                                <h2 className="text-2xl font-bold tracking-tight text-blue-950 sm:text-4xl">Caro Cliente, <br /> Fale connosco aqui!
+                                <h2 className="text-2xl font-bold tracking-tight text-blue-950 sm:text-4xl">Caro cliente, <br /> Fale connosco aqui!
                                 </h2>
                                 <p className="my-4 text-sm leading-6 text-gray-700 sm:mt-6 sm:text-base sm:leading-8">Estimado Cliente, este é o seu espaço para compartilhar mensagens e informações. Envie-nos sua mensagem e estamos prontos para ajudar. Aguardamos o seu Contacto!</p>
                             </div>

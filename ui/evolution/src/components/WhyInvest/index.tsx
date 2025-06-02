@@ -14,7 +14,7 @@ const WhyInvest: React.FC = () => {
                         <div data-aos="fade-up" className="lg:pr-8">
                             <div className="lg:max-w-lg">
                                 <h2 className="text-base text-center md:text-left font-semibold leading-4 text-indigo-600">Porquê?</h2>
-                                <p className="mt-2 text-xl text-center md:text-left font-bold tracking-tight text-gray-900 md:text-4xl">Investir na Grupo Benley?</p>
+                                <p className="mt-2 text-xl text-center md:text-left font-bold tracking-tight text-gray-900 md:text-4xl">Investir na Group Benley?</p>
                                 <p className="my-5 md:text-justify text-center md:text-lg text-sm md:leading-8 leading-6 text-gray-600">
                                     Rentabilidade alta, sem taxas de manutenção de capital, segurança e transparência, facilidade de adesão, sem burocracias, garantia de retorno de investimento.
                                 </p>
