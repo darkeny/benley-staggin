@@ -42,7 +42,7 @@ const Loan: React.FC = () => {
         const loanAmountValue = parseFloat(formData.loanAmount);
 
         if (!isNaN(loanAmountValue)) {
-            if (loanAmountValue >= 5000) {
+            if (loanAmountValue >= 1000) {
                 setFormData(prevState => ({
                     ...prevState,
                     paymentTerm: 30 // Um mês
@@ -120,10 +120,10 @@ const Loan: React.FC = () => {
             formData.isPartialPayment = true;
         }
 
-        // Validação: Não aceitar valores menores que 5000 MT
+        // Validação: Não aceitar valores menores que 1000 MT
         const loanAmountValue = parseFloat(formData.loanAmount);
-        if (isNaN(loanAmountValue) || loanAmountValue < 5000) {
-            setAlertText("O valor mínimo para solicitar o empréstimo é de 5000 MT.");
+        if (isNaN(loanAmountValue) || loanAmountValue < 1000) {
+            setAlertText("O valor mínimo para solicitar o empréstimo é de 1000 MT.");
             setIsModalOpen(true);
             return;
         }
@@ -236,7 +236,11 @@ const Loan: React.FC = () => {
                                         <input
                                             type="number"
                                             name="amount"  // Corrigido o nome do campo
-                                            value={parseFloat(formData.loanAmount) * 1.30} // Exibe o valor calculado
+                                            value={
+                                                parseFloat(formData.loanAmount) < 5000
+                                                  ? parseFloat(formData.loanAmount) * 1.5
+                                                  : parseFloat(formData.loanAmount) * 1.3
+                                              } // Exibe o valor calculado
                                             onChange={handleInputChange}  // Pode ser mantido se necessário para outros inputs
                                             placeholder="O valor a pagar será preenchido automaticamente"
                                             className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
