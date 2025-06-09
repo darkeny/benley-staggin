@@ -1,31 +1,29 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../auth';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Loans from '../../components/Loans';
 import { ClientFinance } from '../../components/ClientFinance';
+import { useFetchUserData } from '../../utils'; 
 
 const ClientPanel: React.FC = () => {
     const { logout } = useAuth();
+    const { user, loading, error } = useFetchUserData();
+    const [activeTab, setActiveTab] = useState<'finance' | 'loans' | 'savings'>('finance');
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleSignOut = () => {
         logout();
     };
 
-    const [activeTab, setActiveTab] = useState<'finance' | 'loans' | 'savings'>('finance');
-    const [userMenuOpen, setUserMenuOpen] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
     const renderContent = () => {
-        if (activeTab === 'loans') {
-            return <Loans />;
-        }
-
-        if (activeTab === 'savings') {
-            return <div className="text-gray-500">Poupanças ainda não disponíveis.</div>;
-        }
-
+        if (activeTab === 'loans') return <Loans />;
+        if (activeTab === 'savings') return <div className="text-gray-500">Poupanças ainda não disponíveis.</div>;
         return <ClientFinance />;
     };
+
+    if (loading) return <div className="p-4 text-gray-700">Carregando dados do usuário...</div>;
+    if (error) return <div className="p-4 text-red-500">Erro: {error}</div>;
 
     return (
         <div className="min-h-full">
@@ -55,6 +53,7 @@ const ClientPanel: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
                         <div className="hidden md:block">
                             <div className="ml-4 flex items-center md:ml-6">
                                 <button type="button" className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -62,19 +61,21 @@ const ClientPanel: React.FC = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a3 3 0 11-5.714 0" />
                                     </svg>
                                 </button>
+
                                 <div className="relative ml-3">
                                     <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white">
-                                        <img className="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                                        <img className="h-8 w-8 rounded-full" src={user?.photo || '/default-user.png'} alt="Perfil" />
                                     </button>
                                     {userMenuOpen && (
                                         <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
-                                            <a href="#" className="block px-4 py-2 text-sm text-gray-700">Perfil</a>
+                                            <a href="#" className="block px-4 py-2 text-sm text-gray-700">{user?.name || 'Perfil'}</a>
                                             <a href="#" onClick={handleSignOut} className="block px-4 py-2 text-sm text-gray-700">Sign out</a>
                                         </div>
                                     )}
                                 </div>
                             </div>
                         </div>
+
                         <div className="flex md:hidden">
                             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white">
                                 <svg className={`${mobileMenuOpen ? 'hidden' : 'block'} h-6 w-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,11 +109,11 @@ const ClientPanel: React.FC = () => {
                         <div className="border-t border-gray-700 pt-4 pb-3">
                             <div className="px-5 flex items-center">
                                 <div className="flex-shrink-0">
-                                    <img className="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="" />
+                                    <img className="h-10 w-10 rounded-full" src={user?.photo || '/default-user.png'} alt="Perfil" />
                                 </div>
                                 <div className="ml-3">
-                                    <div className="text-base font-medium text-white">Usuário</div>
-                                    <div className="text-sm font-medium text-gray-400">email@exemplo.com</div>
+                                    <div className="text-base font-medium text-white">{user?.name || 'Usuário'}</div>
+                                    <div className="text-sm font-medium text-gray-400">{user?.email || 'email@exemplo.com'}</div>
                                 </div>
                             </div>
                             <div className="mt-3 space-y-1 px-2">
@@ -130,7 +131,7 @@ const ClientPanel: React.FC = () => {
                 </div>
             </header>
 
-            <main className="bg-gray-10 md:mx-44">
+            <main className="bg-gray-10 md:mx-10">
                 <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
                     {renderContent()}
                 </div>

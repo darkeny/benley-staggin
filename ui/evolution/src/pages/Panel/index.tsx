@@ -110,7 +110,7 @@ const Panel: React.FC = () => {
                     </div>
                 </header>
                 <main className='bg-gray-10'>
-                    <div className="mx-auto  px-4 py-6 sm:px-6 lg:px-8 ">
+                    <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8 ">
                         <div className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.200),white)] opacity-20"></div>
                         <div className="absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] bg-white shadow-xl shadow-indigo-600/10 ring-1 ring-indigo-50 sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-left"></div>
                         {/* <!-- Your content --> */}
