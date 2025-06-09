@@ -140,7 +140,9 @@ const ClientFinance: React.FC = () => {
                         </div>
                         <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                             <h4 className="text-lg font-bold text-gray-700">Taxa de Juros</h4>
-                            <p className="text-gray-500">30% do Valor</p>
+                            <p className="text-gray-500">
+                                {loan.amountDue < 5000 ? '50% do valor' : '30% do valor'}
+                            </p>
                         </div>
                     </div>
                 </div>
