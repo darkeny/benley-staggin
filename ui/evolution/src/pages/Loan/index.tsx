@@ -232,7 +232,7 @@ const Loan: React.FC = () => {
                                 </div>
                                 <div className="flex flex-col gap-6 md:flex-row md:items-start">
                                     <div className="flex-1 relative">
-                                        <label className="block text-sm font-medium text-gray-700">Valor a Pagar (MZN)</label>
+                                        <label className="block text-sm font-medium text-gray-700">Encargos a liquidar (MZN)</label>
                                         <input
                                             type="number"
                                             name="amount"  // Corrigido o nome do campo

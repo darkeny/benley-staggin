@@ -195,13 +195,15 @@ const Loans: React.FC = () => {
             <div className="container mx-auto">
                 <div className="text-right">
                     {user.role === 'USER' && (
-                        <>
-                            <button onClick={handleNavigate} className="mr-8 bg-blue-600 hover:bg-blue-800 text-white font-bold py-1 mb-2 md:py-3 px-10 rounded-lg shadow-lg text-lg transition-all duration-300">
-                                Novo
-                            </button>
-                        </>
+                        <button
+                            onClick={handleNavigate}
+                            className=" bg-blue-600 hover:bg-blue-800 text-white font-bold  mb-2 md:py-3 px-8 rounded-lg shadow-lg text-lg transition-all duration-300"
+                        >
+                            Novo
+                        </button>
                     )}
                 </div>
+    
                 <div className="relative text-gray-600 my-2">
                     <input
                         type="search"
@@ -212,143 +214,135 @@ const Loans: React.FC = () => {
                         className="border-2 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none w-full"
                     />
                 </div>
-                <table className="min-w-full divide-y divide-gray-200 shadow-2xl">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            {user.role === 'ADMIN' && (
-                                <>
-                                    <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Restante</th>
-                                    <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Multa</th>
-                                </>
-
-                            )}
-                            <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Cliente</th>
-                            <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Solicitado</th>
-                            <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">A pagar</th>
-                            <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Pagamento</th>
-                            <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Conta</th>
-                            <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Garantia</th>
-                            <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Parcelas</th>
-                            {/* <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Fim</th> */}
-                            {user.role === 'ADMIN' && (
-                                <>
-                                    <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Penhor</th>
-                                    <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Status</th>
-                                    <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Acções</th>
-                                </>
-                            )}
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredLoans.map((loan: Loan) => {
-                            const today = new Date();
-                            const loanCreatedAt = new Date(loan.createdAt);
-                            const endDate = new Date(loanCreatedAt.setDate(loanCreatedAt.getDate() + 31));
-                            const multas = CalculationOfFines(endDate, today);
-                            const TotalMultas = (multas / 100) * loan.balanceDue;
-
-                            return (
-                                <tr key={loan.id}>
-                                    {user.role === 'ADMIN' && (
-                                        <>
-                                            <td className="px-6 py-4 text-xs leading-5 text-gray-500">
-                                                <span
-                                                    className={`inline-flex items-center rounded-md px-4 py-2 text-xs font-medium ring-1 ring-inset
-                                                ${calculateDaysLeft(String(loan.createdAt), 30) > 22
-                                                            ? 'bg-green-50 text-green-700 ring-green-600/20' // Verde
+    
+                <div className="overflow-x-auto md:overflow-visible  md:shadow-2xl">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                {user.role === 'ADMIN' && (
+                                    <>
+                                        <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Restante</th>
+                                        <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Multa</th>
+                                    </>
+                                )}
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Cliente</th>
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Solicitado</th>
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">A pagar</th>
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Pagamento</th>
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Conta</th>
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Garantia</th>
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Parcelas</th>
+                                {user.role === 'ADMIN' && (
+                                    <>
+                                        <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Penhor</th>
+                                        <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Status</th>
+                                        <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Acções</th>
+                                    </>
+                                )}
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {filteredLoans.map((loan: Loan) => {
+                                const today = new Date();
+                                const loanCreatedAt = new Date(loan.createdAt);
+                                const endDate = new Date(loanCreatedAt.setDate(loanCreatedAt.getDate() + 31));
+                                const multas = CalculationOfFines(endDate, today);
+                                const TotalMultas = (multas / 100) * loan.balanceDue;
+    
+                                return (
+                                    <tr key={loan.id}>
+                                        {user.role === 'ADMIN' && (
+                                            <>
+                                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">
+                                                    <span className={`inline-flex items-center rounded-md px-4 py-2 text-xs font-medium ring-1 ring-inset
+                                                        ${calculateDaysLeft(String(loan.createdAt), 30) > 22
+                                                            ? 'bg-green-50 text-green-700 ring-green-600/20'
                                                             : calculateDaysLeft(String(loan.createdAt), 30) > 15
-                                                                ? 'bg-green-50 text-green-700 ring-green-600/20' // Verde-limão
+                                                                ? 'bg-green-50 text-green-700 ring-green-600/20'
                                                                 : calculateDaysLeft(String(loan.createdAt), 30) > 8
-                                                                    ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20' // Amarelo
+                                                                    ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20'
                                                                     : calculateDaysLeft(String(loan.createdAt), 30) > 0
-                                                                        ? 'bg-orange-50 text-orange-700 ring-orange-600/20' // Laranja
-                                                                        : 'bg-red-50 text-red-700 ring-red-600/20' // Vermelho
-                                                        }`}
-                                                >
-                                                    {calculateDaysLeft(String(loan.createdAt), 30)} dias
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs leading-5 text-gray-500">{TotalMultas.toFixed(2)}MT</td>
-                                        </>
-                                    )}
-                                    <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.customer.fullName}</td>
-                                    <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.loanAmount.toFixed(2)}MT</td>
-                                    <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.balanceDue.toFixed(2)}MT</td>
-                                    <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.paymentMethod}</td>
-                                    <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.accountNumber}</td>
-                                    <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.collateral}</td>
-                                    <td className="text-xs text-center leading-5 text-gray-500">{loan.installments}</td>
-                                    {/* <td className="px-6 py-4 text-xs leading-5 text-gray-500">
-                                    {new Date(new Date(loan.createdAt).setMonth(new Date(loan.createdAt).getMonth() + 1)).toLocaleDateString('pt-BR')}
-                                </td> */}
-                                    {user.role === 'ADMIN' && (
-                                        <>
-                                            <td className="px-6 py-4 text-center text-xs leading-5 text-gray-500">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={loan.pawn === 'YES'}
-                                                    onChange={(e) => updatePawnStatus(loan.id, e.target.checked ? 'YES' : 'NO')}
-                                                    disabled={isPaymentTermExceeded(loan.createdAt)} // Passa o campo "createdAt"
-                                                    title={
-                                                        isPaymentTermExceeded(loan.createdAt)
+                                                                        ? 'bg-orange-50 text-orange-700 ring-orange-600/20'
+                                                                        : 'bg-red-50 text-red-700 ring-red-600/20'
+                                                        }`}>
+                                                        {calculateDaysLeft(String(loan.createdAt), 30)} dias
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{TotalMultas.toFixed(2)}MT</td>
+                                            </>
+                                        )}
+                                        <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.customer.fullName}</td>
+                                        <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.loanAmount.toFixed(2)}MT</td>
+                                        <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.balanceDue.toFixed(2)}MT</td>
+                                        <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.paymentMethod}</td>
+                                        <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.accountNumber}</td>
+                                        <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.collateral}</td>
+                                        <td className="text-xs text-center leading-5 text-gray-500">{loan.installments}</td>
+                                        {user.role === 'ADMIN' && (
+                                            <>
+                                                <td className="px-6 py-4 text-center text-xs leading-5 text-gray-500">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={loan.pawn === 'YES'}
+                                                        onChange={(e) => updatePawnStatus(loan.id, e.target.checked ? 'YES' : 'NO')}
+                                                        disabled={isPaymentTermExceeded(loan.createdAt)}
+                                                        title={isPaymentTermExceeded(loan.createdAt)
                                                             ? "Você não pode penhorar o usuário antes de 30 dias do empréstimo."
-                                                            : ""
-                                                    }
-                                                />
-                                            </td>
-                                            <td className="px-6 py-4 text-xs leading-5 text-gray-500">
-                                                <select
-                                                    //@ts-ignore
-                                                    value={loan.isActive}
-                                                    onChange={(e) =>
-                                                        updateLoanStatus(loan.id, e.target.value, {
-                                                            email: loan.customer.email, // Certifique-se de que esses campos existem no objeto `loan`
-                                                            fullName: loan.customer.fullName,
-                                                        })
-                                                    }
-                                                    className="rounded p-1 bg-white outline-none"
-                                                >
-                                                    <option value="PAID">PAGO</option>
-                                                    <option value="PENDING">PENDENTE</option>
-                                                    <option value="ACTIVE">ACTIVO</option>
-                                                    <option value="REFUSED">RECUSADO</option>
-                                                </select>
-                                            </td>
-                                            <td className="px-6 py-4 text-lg leading-5 text-gray-500 text-center">
-                                                <div className="flex items-center justify-center gap-4">
-                                                    <DeleteModal
-                                                        text="Excluir"
-                                                        subtitles="Tem certeza de que deseja excluir?"
-                                                        onSubmit={() => deleteLoan(loan.id, String(loan.isActive))}
-                                                        id={loan.id}
+                                                            : ""}
                                                     />
-                                                    |
-                                                    <button
-                                                        onClick={() => handleDownloadContract(loan.id, loan.customer.fullName)}
-                                                        className="text-blue-500 hover:text-blue-700 disabled:opacity-50"
-                                                        disabled={loadingId === loan.id}
+                                                </td>
+                                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">
+                                                    <select
+                                                        //@ts-ignore
+                                                        value={loan.isActive}
+                                                        onChange={(e) =>
+                                                            updateLoanStatus(loan.id, e.target.value, {
+                                                                email: loan.customer.email,
+                                                                fullName: loan.customer.fullName,
+                                                            })
+                                                        }
+                                                        className="rounded p-1 bg-white outline-none"
                                                     >
-                                                        {loadingId === loan.id ? (
-                                                            <FiLoader className="w-5 h-5 animate-spin" />
-                                                        ) : (
-                                                            <FiDownload className="w-5 h-5" />
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </td>
-
-
-                                        </>
-                                    )}
-
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                                        <option value="PAID">PAGO</option>
+                                                        <option value="PENDING">PENDENTE</option>
+                                                        <option value="ACTIVE">ACTIVO</option>
+                                                        <option value="REFUSED">RECUSADO</option>
+                                                    </select>
+                                                </td>
+                                                <td className="px-6 py-4 text-lg leading-5 text-gray-500 text-center">
+                                                    <div className="flex items-center justify-center gap-4">
+                                                        <DeleteModal
+                                                            text="Excluir"
+                                                            subtitles="Tem certeza de que deseja excluir?"
+                                                            onSubmit={() => deleteLoan(loan.id, String(loan.isActive))}
+                                                            id={loan.id}
+                                                        />
+                                                        |
+                                                        <button
+                                                            onClick={() => handleDownloadContract(loan.id, loan.customer.fullName)}
+                                                            className="text-blue-500 hover:text-blue-700 disabled:opacity-50"
+                                                            disabled={loadingId === loan.id}
+                                                        >
+                                                            {loadingId === loan.id ? (
+                                                                <FiLoader className="w-5 h-5 animate-spin" />
+                                                            ) : (
+                                                                <FiDownload className="w-5 h-5" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </>
+                                        )}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+    
             <Alert text={alertText} isOpen={isModalOpen} onClose={handleCloseModal} />
-
+    
             {isModalSuccessOpen && (
                 <SuccessAlert
                     isOpen={isModalSuccessOpen}
@@ -358,6 +352,7 @@ const Loans: React.FC = () => {
             )}
         </>
     );
+    
 };
 
 export default Loans;
