@@ -95,7 +95,7 @@ const Customers: React.FC = () => {
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Nome</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">D.Nascimento</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Profissão</th>
-                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Fonte de Renda</th>
+                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Actividade</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Renda</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Estado Civil</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Endereço</th>
