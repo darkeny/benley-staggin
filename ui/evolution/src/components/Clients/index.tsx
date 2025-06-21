@@ -10,6 +10,7 @@ interface Customer {
     id: string;
     fullName: string;
     dateOfBirth: string;
+    profession: string;
     email: string;
     contact: string;
     gender: string;
@@ -92,14 +93,14 @@ const Customers: React.FC = () => {
                         <tr>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500"></th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Nome</th>
-                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">B.Identidade</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">D.Nascimento</th>
-                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Contacto</th>
-                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Sexo</th>
-                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Estado Civil</th>
-                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Endereço</th>
+                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Profissão</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Fonte de Renda</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Renda</th>
+                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Estado Civil</th>
+                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Endereço</th>
+                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Contacto</th>
+                            <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">E-mail</th>
                             <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Eliminar</th>
                         </tr>
                     </thead>
@@ -117,14 +118,14 @@ const Customers: React.FC = () => {
                                         }`} />
                                 </td>
                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.fullName}</td>
-                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.identityNumber}</td>
                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">{new Date(customer.dateOfBirth).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.contact}</td>
-                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.gender}</td>
-                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.marital_status}</td>
-                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.address}</td>
+                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.profession}</td>
                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.incomeSource}</td>
                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.monthlyIncome.toFixed(2)}</td>
+                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.marital_status}</td>
+                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.address}</td>
+                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.contact}</td>
+                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.email}</td>
                                 <td className="px-6 py-4 text-lg leading-5 text-gray-500">
                                     <DeleteModal
                                         text="Eliminar"
