@@ -36,11 +36,11 @@ const Posts: React.FC = () => {
         formData.append('message', message);
 
         if (pdfFile) {
-            formData.append('pdf', pdfFile);
+            formData.append('attachments', pdfFile);
         }
 
         if (photoFile) {
-            formData.append('photo', photoFile);
+            formData.append('attachments', photoFile);
         }
 
         try {
