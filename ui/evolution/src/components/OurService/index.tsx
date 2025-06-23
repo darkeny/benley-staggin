@@ -26,7 +26,7 @@ const OurServices: React.FC = () => {
                     <div data-aos="slide-left" className="rounded-3xl rounded-t-3xl bg-white/60 p-8 ring-1 ring-gray-900/10 sm:mx-8 sm:rounded-b-none sm:p-10 lg:mx-0 lg:rounded-bl-3xl lg:rounded-tr-none">
                         <h3 id="tier-hobby" className="text-base/7 font-semibold text-indigo-600">Crédito</h3>
                         <p className="md:mt-4 flex items-baseline gap-x-2">
-                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-gray-900">5000 MT</span>
+                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-gray-900">1000 MT</span>
                             <span className="text-sm text-gray-500">/ valor mínimo</span>
                         </p>
                         <p className="md:my-6 my-5  text-sm text-gray-600">Adira já o seu crédito e impulsione os seus investimentos financeiros agora.</p>
@@ -35,19 +35,19 @@ const OurServices: React.FC = () => {
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
                                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                                 </svg>
-                                30% de taxas de Juros
-                            </li>
-                            <li className="flex gap-x-3">
-                                <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
-                                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
-                                </svg>
                                 Sem taxas de impostos
                             </li>
                             <li className="flex gap-x-3">
-                                <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
+                                <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                                 </svg>
-                                Segurança e Transparência
+                                30% de juros a partir de 5.000 MT
+                            </li>
+                            <li className="flex gap-x-3">
+                                <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+                                </svg>
+                                50% de juros abaixo de 5.000 MT
                             </li>
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
