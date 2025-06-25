@@ -7,6 +7,7 @@ import { FaSpinner } from "react-icons/fa6";
 import { handleError } from "../../handleError";
 import { useNavigate } from 'react-router-dom';
 import { IoCheckmarkDoneOutline } from "react-icons/io5";
+import { Helmet } from "react-helmet";
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const SignUp: React.FC = () => {
@@ -228,6 +229,11 @@ const SignUp: React.FC = () => {
 
     return (
         <>
+            <Helmet>
+                <title>Criar Conta | Grupo Benley Microcrédito</title>
+                <meta name="description" content="Cadastre-se na plataforma do Grupo Benley e tenha acesso rápido a microcréditos, investimentos e gestão financeira personalizada em Moçambique." />
+                <meta name="keywords" content="cadastro Benley, criar conta, microcrédito Moçambique, Grupo Benley, inscrever, acesso, crédito rápido, financiamento" />
+            </Helmet>
             <div className="p-3">
                 <Navbar />
             </div>

@@ -11,6 +11,7 @@ import { CoreValues } from "../../components/CoreValues";
 import { Newsletter } from "../../components/Newslleter";
 import { WhoWeAre } from "../../components/WhoWeAre";
 import { Statistics } from "../../components/Statistics";
+import { Helmet } from "react-helmet"
 
 export function Home() {
   const [showModal, setShowModal] = useState(false);
@@ -24,6 +25,11 @@ export function Home() {
 
   return (
     <>
+      <Helmet>
+        <title>Grupo Benley | Microcrédito Rápido em Moçambique</title>
+        <meta name="description" content="Benley Microcrédito oferece soluções rápidas e seguras para capital pessoal e empresarial. Grupo Benley é sua ponte para o sucesso financeiro." />
+        <meta name="keywords" content="Benley, Grupo Benley, microcrédito, Moçambique, dinheiro, capital, cooperativa de poupança e crédito, poupança, crédito,  empréstimo rápido" />
+      </Helmet>
       <div className="container mx-auto px-4">
         <Navbar />
       </div>

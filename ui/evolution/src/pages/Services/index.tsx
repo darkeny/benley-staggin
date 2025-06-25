@@ -8,10 +8,16 @@ import { WhyInvest } from "../../components/WhyInvest";
 import { FinancialConsulting } from "../../components/FinancialConsulting";
 import { ConsultingModal } from "../../components/Modal/ConsultingModal";
 import { CapitalSeguro } from "../../components/SafeCapital";
+import { Helmet } from "react-helmet";
 
 const Services: React.FC = () => {
     return (
         <>
+            <Helmet>
+                <title>Serviços | Benley Microcrédito em Moçambique</title>
+                <meta name="description" content="Conheça os serviços oferecidos pela Benley, desde microcréditos até gestão financeira para empresas e particulares." />
+                <meta name="keywords" content="Benley serviços, Grupo Benley, microcrédito, gestão financeira, Moçambique" />
+            </Helmet>
             <div className="container mx-auto px-4">
                 <Navbar />
             </div>
