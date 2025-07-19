@@ -47,7 +47,7 @@ export function Home() {
             muted
             controls={false}
           >
-            <source src="/video/Capital.MP4" type="video/mp4" />
+            <source src="/video/Capital.mp4" type="video/mp4" />
             Your browser does not support the video tag
           </video>
 

@@ -96,7 +96,7 @@ const Loans: React.FC = () => {
 
             if (response.status === 200) {
                 setAlertText('Estado atualizado com sucesso!');
-                setIsModalSuccessOpen(true);                
+                setIsModalSuccessOpen(true);
 
                 // Verificar o novo estado e enviar e-mails, se necessário
                 switch (newStatus) {
@@ -203,7 +203,7 @@ const Loans: React.FC = () => {
                         </button>
                     )}
                 </div>
-    
+
                 <div className="relative text-gray-600 my-2">
                     <input
                         type="search"
@@ -214,7 +214,7 @@ const Loans: React.FC = () => {
                         className="border-2 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none w-full"
                     />
                 </div>
-    
+
                 <div className="overflow-x-auto md:overflow-visible  md:shadow-2xl">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-100">
@@ -243,14 +243,14 @@ const Loans: React.FC = () => {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredLoans.map((loan: Loan) => {
-                                const today = new Date();
-                                const loanCreatedAt = new Date(loan.createdAt);
-                                const endDate = new Date(loanCreatedAt.setDate(loanCreatedAt.getDate() + 31));
-                                const multas = CalculationOfFines(endDate, today);
-                                const TotalMultas = (multas / 100) * loan.balanceDue;
-    
+                                const loanCreatedAt = loan.createdAt;
+                                const loanDuration = 30;
+                                const balanceDue = loan.balanceDue;
+                                const {fineAmount } = CalculationOfFines(loanCreatedAt, loanDuration, balanceDue);
+
                                 return (
                                     <tr key={loan.id}>
+
                                         {user.role === 'ADMIN' && (
                                             <>
                                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">
@@ -268,7 +268,7 @@ const Loans: React.FC = () => {
                                                         {calculateDaysLeft(String(loan.createdAt), 30)} dias
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{TotalMultas.toFixed(2)}MT</td>
+                                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{fineAmount.toFixed(2)}MT</td>
                                             </>
                                         )}
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.customer.fullName}</td>
@@ -340,9 +340,9 @@ const Loans: React.FC = () => {
                     </table>
                 </div>
             </div>
-    
+
             <Alert text={alertText} isOpen={isModalOpen} onClose={handleCloseModal} />
-    
+
             {isModalSuccessOpen && (
                 <SuccessAlert
                     isOpen={isModalSuccessOpen}
@@ -352,7 +352,7 @@ const Loans: React.FC = () => {
             )}
         </>
     );
-    
+
 };
 
 export default Loans;

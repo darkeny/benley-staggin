@@ -17,12 +17,16 @@ const ClientFinance: React.FC = () => {
         }
     }, [user.role, navigate]);
 
-    const today = new Date();
+
     const loanCreatedAt = new Date(loan.createdAt);
-    const endDate = new Date(loanCreatedAt.setDate(loanCreatedAt.getDate() + 31));
-    const multas = CalculationOfFines(endDate, today);
-    const daysLeft = calculateDaysLeft(loan.createdAt, loan.totalDays);
-    const TotalMultas = (multas / 100) * loan.balanceDue;
+    const loanDuration = loan.totalDays;
+    const balanceDue = loan.balanceDue;
+
+    const { daysDelayed, fineAmount } = CalculationOfFines(loanCreatedAt, loanDuration, balanceDue);
+    const daysLeft = calculateDaysLeft(loan.createdAt, loanDuration);
+
+    // fineAmount já é o valor da multa, não precisa recalcular
+    const TotalMultas = fineAmount;
 
     const savings = {
         amount: 50000,
@@ -66,9 +70,9 @@ const ClientFinance: React.FC = () => {
 
                         {/* Cartão Empréstimo */}
                         <div className={`p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ${loan.status === "ACTIVE"
-                            ? 'bg-green-50 border-green-300 text-green-700':loan.status === "REFUSED"? 'bg-red-50 border-red-400 text-red-700': 'bg-gray-50 border-gray-300 text-gray-700'} border`}>
+                            ? 'bg-green-50 border-green-300 text-green-700' : loan.status === "REFUSED" ? 'bg-red-50 border-red-400 text-red-700' : 'bg-gray-50 border-gray-300 text-gray-700'} border`}>
                             <div className="flex items-center mb-4">
-                                <GiTakeMyMoney className={`${loan.status === "ACTIVE" ? 'text-green-600':loan.status === "REFUSED" ? 'text-red-600' : 'text-gray-500'}`} size={40} />
+                                <GiTakeMyMoney className={`${loan.status === "ACTIVE" ? 'text-green-600' : loan.status === "REFUSED" ? 'text-red-600' : 'text-gray-500'}`} size={40} />
                                 <div className="ml-4">
                                     <h4 className="text-lg font-bold text-gray-700">Empréstimo</h4>
                                     <p className="text-sm font-semibold">
@@ -125,16 +129,17 @@ const ClientFinance: React.FC = () => {
                         <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                             <h4 className="text-lg font-bold text-gray-700">Fim</h4>
                             <p className="text-gray-500">
-                                {endDate && !isNaN(new Date(endDate).getTime())
-                                    ? new Date(endDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                                {loan.createdAt && loanDuration
+                                    ? new Date(new Date(loan.createdAt).setDate(new Date(loan.createdAt).getDate() + loanDuration))
+                                        .toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })
                                     : "Sem datas ainda"}
                             </p>
                         </div>
-                        <div className={`p-6 ${multas && !isNaN(multas) && multas >= 0 ? 'bg-red-50 border-red-700 text-red-700' : 'bg-white border border-gray-200'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}>
+                        <div className={`p-6 ${daysDelayed && !isNaN(daysDelayed) && daysDelayed >= 0 ? 'bg-red-50 border-red-700 text-red-700' : 'bg-white border border-gray-200'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}>
                             <h4 className="text-lg font-bold text-gray-700">Total de Multas</h4>
                             <p className="text-gray-500">
-                                {multas && !isNaN(multas) && multas >= 0
-                                    ? `${multas} dia/s / ${TotalMultas.toFixed(2)}MT`
+                                {daysDelayed && !isNaN(daysDelayed) && daysDelayed >= 0
+                                    ? `${daysDelayed} dia/s - ${TotalMultas.toFixed(2)}MT`
                                     : "Sem multas"}
                             </p>
                         </div>
