@@ -1,5 +1,6 @@
 import { ChangeEvent, FormEvent, RefObject } from "react";
 import axios from "axios";
+import { handleError } from "../handleError";
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
@@ -167,8 +168,8 @@ export const handleSubmit = async (
     }
   } catch (error: any) {
     console.error("Erro ao enviar solicitação:", error);
-    const errorMessage =
-      error?.response?.data?.message || "Erro ao enviar a solicitação.";
+    
+    const errorMessage = handleError(error);
     setAlertText(errorMessage);
     setIsModalOpen(true);
   } finally {
