@@ -1,4 +1,4 @@
-interface Customer {
+export interface Customer {
   id: string;
   fullName: string;
   dateOfBirth: Date;
@@ -14,19 +14,24 @@ interface Customer {
   updatedAt: Date;
 }
 
-interface Loan {
-  balanceDue: any;
+export type LoanStatus = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'PAID';
+
+export interface Loan {
   id: string;
   loanAmount: number;
-  paymentTerm: number; // em meses
+  balanceDue: number;
+  paymentTerm: number;
   paymentMethod: string;
   accountNumber: string;
   collateral: string;
-  pawn: string
-  installments: number ;
-  isActive: boolean; // para indicar se o empréstimo está ativo
-  customerId: string; // ID do cliente associado
-  customer: Customer; // dados do cliente
-  createdAt: Date;
-  updatedAt: Date;
+  pawn: string;
+  installments: number;
+  status: LoanStatus; // <- agora é um status legível
+  customerId: string;
+  customer: {
+    fullName: string;
+    email: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }

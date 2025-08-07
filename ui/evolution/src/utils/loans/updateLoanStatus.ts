@@ -18,7 +18,7 @@ export const updateLoanStatus = async (
     }
 
     const response = await axios.put(`${apiUrl}/ibuildLoan/${loanId}`, {
-      isActive: newStatus,
+      status: newStatus,
     });
 
     if (response.status === 200) {

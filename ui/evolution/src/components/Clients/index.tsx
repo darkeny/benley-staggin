@@ -20,7 +20,7 @@ interface Customer {
     identityNumber: string;
     createdAt: string;
     hasActiveLoan: boolean;
-    isActive?: 'PAID' | 'PENDING' | 'ACTIVE' | 'REFUSED';
+    status?: 'PAID' | 'PENDING' | 'ACTIVE' | 'REFUSED';
 }
 
 const Customers: React.FC = () => {
@@ -108,10 +108,10 @@ const Customers: React.FC = () => {
                                 <tr key={customer.id}>
                                     <td className="text-center px-5 text-lg text-gray-500">
                                         <div className={`w-2 h-2 rounded-full ${
-                                            customer.loan?.isActive === 'ACTIVE' ? 'bg-green-500' :
-                                            customer.loan?.isActive === 'PENDING' ? 'bg-yellow-500' :
-                                            customer.loan?.isActive === 'PAID' ? 'bg-green-500' :
-                                            customer.loan?.isActive === 'REFUSED' ? 'bg-red-500' :
+                                            customer.loan?.status === 'ACTIVE' ? 'bg-green-500' :
+                                            customer.loan?.status === 'PENDING' ? 'bg-yellow-500' :
+                                            customer.loan?.status === 'PAID' ? 'bg-green-500' :
+                                            customer.loan?.status === 'REFUSED' ? 'bg-red-500' :
                                             'bg-gray-500'
                                         }`} />
                                     </td>

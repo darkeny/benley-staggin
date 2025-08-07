@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const useFetchUserData = () => {
@@ -75,9 +76,9 @@ const useFetchUserData = () => {
                     setLoan({
                         amountDue: userData.loan?.loanAmount || 0,
                         balanceDue: userData.loan?.balanceDue || 0,
-                        status: userData.loan?.isActive,
-                        totalDays: userData.loan?.totalDays || 30,
-                        daysLeft: 30, // Calcule os dias restantes se necessário
+                        status: userData.loan?.status || 'PENDING', // ← aqui está o ajuste
+                        totalDays: userData.loan?.paymentTerm * 30 || 30,
+                        daysLeft: 30,
                         createdAt: userData.loan?.createdAt || ''
                     });
                 }

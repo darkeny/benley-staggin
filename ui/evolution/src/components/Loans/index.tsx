@@ -161,7 +161,7 @@ const Loans: React.FC = () => {
                                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">
                                                     <select
                                                         //@ts-ignore
-                                                        value={loan.isActive}
+                                                        value={loan.status}
                                                         onChange={(e) =>
                                                             updateLoanStatus(
                                                                 loan.id,
@@ -193,7 +193,7 @@ const Loans: React.FC = () => {
                                                             onSubmit={() =>
                                                                 deleteLoan(
                                                                     loan.id,
-                                                                    String(loan.isActive),
+                                                                    String(loan.status),
                                                                     apiUrl,
                                                                     loans,
                                                                     setLoans,
