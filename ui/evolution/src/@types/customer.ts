@@ -32,6 +32,6 @@ export interface Loan {
     fullName: string;
     email: string;
   };
-  createdAt: string;
+  createdAt: Date;
   updatedAt: string;
 }

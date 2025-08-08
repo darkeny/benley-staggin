@@ -13,6 +13,7 @@ import {
     isPaymentTermExceeded,
     handleDownloadContract
 } from '../../utils/loans';
+import { Loan } from '../../@types/customer';
 
 const Loans: React.FC = () => {
     const navigate = useNavigate();
@@ -90,6 +91,11 @@ const Loans: React.FC = () => {
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Conta</th>
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Garantia</th>
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Parcelas</th>
+                                {user.role === 'USER' && (
+                                    <>
+                                        <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Status</th>
+                                    </>
+                                )}
                                 {user.role === 'ADMIN' && (
                                     <>
                                         <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Penhor</th>
@@ -135,6 +141,20 @@ const Loans: React.FC = () => {
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.accountNumber}</td>
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.collateral}</td>
                                         <td className="text-xs text-center leading-5 text-gray-500">{loan.installments}</td>
+                                        {user.role === 'USER' && (
+                                            <>
+                                                <td className="px-6 py-4 text-xs leading-5 text-gray-600">
+                                                    <span className="inline-block rounded px-2 py-1 text-xs font-semibold border border-gray-300 bg-gray-100">
+                                                        {{
+                                                            PAID: '✅ PAGO',
+                                                            PENDING: '⏳ PENDENTE',
+                                                            ACTIVE: '📌 ACTIVO',
+                                                            REFUSED: '❌ RECUSADO',
+                                                        }[loan.status] || 'Desconhecido'}
+                                                    </span>
+                                                </td>
+                                            </>
+                                        )}
                                         {user.role === 'ADMIN' && (
                                             <>
                                                 <td className="px-6 py-4 text-center text-xs leading-5 text-gray-500">
@@ -179,10 +199,10 @@ const Loans: React.FC = () => {
                                                         }
                                                         className="rounded p-1 bg-white outline-none"
                                                     >
-                                                        <option value="PAID">PAGO</option>
-                                                        <option value="PENDING">PENDENTE</option>
-                                                        <option value="ACTIVE">ACTIVO</option>
-                                                        <option value="REFUSED">RECUSADO</option>
+                                                        <option value="PAID">✅ PAGO</option>
+                                                        <option value="PENDING">⏳ PENDENTE</option>
+                                                        <option value="ACTIVE">📌 ACTIVO</option>
+                                                        <option value="REFUSED">❌ RECUSADO</option>
                                                     </select>
                                                 </td>
                                                 <td className="px-6 py-4 text-lg leading-5 text-gray-500 text-center">
