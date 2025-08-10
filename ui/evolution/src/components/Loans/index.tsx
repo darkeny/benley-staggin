@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import { FiDownload, FiLoader } from "react-icons/fi";
+import { Alert } from '../Modal/alert';
 import { DeleteModal } from '../Modal/deleteModal';
 import { SuccessAlert } from '../Modal/successAlert';
 import { calculateDaysLeft, CalculationOfFines, useFetchUserData } from '../../utils';
-import { useNavigate } from "react-router-dom";
-import { Alert } from '../Modal/alert';
-import { FiDownload, FiLoader } from "react-icons/fi";
+import {
+    fetchLoans,
+    deleteLoan,
+    updateLoanStatus,
+    updatePawnStatus,
+    isPaymentTermExceeded,
+    handleDownloadContract
+} from '../../utils/loans';
+import { Loan } from '../../@types/customer';
 
 const Loans: React.FC = () => {
     const navigate = useNavigate();
@@ -15,153 +23,18 @@ const Loans: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
     const [alertText, setAlertText] = useState('');
-    const { user, loan } = useFetchUserData();
+    const { user } = useFetchUserData();
     const apiUrl = import.meta.env.VITE_APP_API_URL;
 
-
     useEffect(() => {
-        if (user && user.role && user.userId) {
-            fetchLoans();
+        if (user?.role && user?.userId) {
+            fetchLoans(apiUrl, user, setLoans);
         }
     }, [user]);
-
-    const fetchLoans = async () => {
-        if (!user || !user.role || !user.userId) {
-            console.warn('Usuário não definido. Abortando fetch.');
-            return;
-        }
-
-        try {
-            const response = await axios.get(`${apiUrl}/ibuildLoan`);
-            const allLoans: Loan[] = response.data;
-
-            const filteredLoans = user.role === 'USER'
-                ? allLoans.filter((loan: Loan) => loan.customerId === user.userId)
-                : allLoans;
-
-            const sortedLoans = filteredLoans.sort(
-                (a: Loan, b: Loan) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-
-            setLoans(sortedLoans);
-        } catch (error) {
-            console.error('Error fetching loans:', error);
-        }
-    };
-
-
-
-
-    const deleteLoan = async (id: string, loanStatus: string) => {
-        if (loanStatus === 'ACTIVE') {
-            setAlertText('Empréstimo ativo não pode ser excluído.');
-            setIsModalOpen(true);
-            return; // Impede a execução do código de exclusão se o empréstimo estiver ativo
-        }
-
-        try {
-            await axios.delete(`${apiUrl}/ibuildLoan/${id}`);
-            setLoans(loans.filter(loan => loan.id !== id));
-        } catch (error) {
-            console.error('Error deleting loan:', error);
-        }
-    };
-
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
-
-
-
-
-    const updateLoanStatus = async (
-        loanId: string,
-        newStatus: string,
-        customer: { email: string; fullName: string }
-
-    ) => {
-        try {
-            if (!customer || !customer.email || !customer.fullName) {
-                console.error('Dados do cliente estão incompletos:', customer);
-                setAlertText('Dados do cliente estão incompletos. Não foi possível atualizar o status.');
-                setIsModalOpen(true);
-                return;
-            }
-
-            // Atualizar o status do empréstimo
-            const response = await axios.put(`${apiUrl}/ibuildLoan/${loanId}`, {
-                isActive: newStatus,
-            });
-
-            if (response.status === 200) {
-                setAlertText('Estado atualizado com sucesso!');
-                setIsModalSuccessOpen(true);
-
-                // Verificar o novo estado e enviar e-mails, se necessário
-                switch (newStatus) {
-                    case 'REFUSED':
-                        await axios.post(`${apiUrl}/sendLoansMailRefused`, {
-                            email: customer.email,
-                            fullName: customer.fullName,
-                        });
-                        break;
-                    case 'PAID':
-                        await axios.post(`${apiUrl}/sendLoansMailPayd`, {
-                            email: customer.email,
-                            fullName: customer.fullName,
-                        });
-                        break;
-                    case 'ACTIVE':
-                        await axios.post(`${apiUrl}/sendLoansMailAprove`, {
-                            email: customer.email,
-                            fullName: customer.fullName,
-                        });
-                        break;
-                    default:
-                        // Nenhum e-mail será enviado para PENDING ou outros estados
-                        break;
-                }
-
-                // Recarregar a lista de empréstimos
-                fetchLoans();
-            }
-        } catch (error) {
-            console.error('Erro ao atualizar o status do empréstimo:', error);
-            setAlertText('Erro ao atualizar o status do empréstimo.');
-            setIsModalOpen(true);
-        }
-    };
-
-    const updatePawnStatus = async (loanId: string, newStatus: string) => {
-        try {
-            const response = await axios.put(`${apiUrl}/ibuildLoan/pawn/${loanId}`, {
-                pawn: newStatus, // Atualiza o estado do penhor para 'YES' ou 'NO'
-            });
-
-            if (response.status === 200) {
-                setAlertText('Estado do penhor atualizado com sucesso!');
-                setIsModalSuccessOpen(true);
-            }
-            fetchLoans(); // Atualiza a lista após a modificação
-        } catch (error) {
-            console.error("Erro ao atualizar o estado do penhor", error);
-            setAlertText('Erro ao atualizar o estado do penhor.');
-            setIsModalOpen(true);
-        }
-    };
-
-    const isPaymentTermExceeded = (createdAt: string | Date): boolean => {
-        const loanCreatedAt = new Date(createdAt); // Converte o createdAt para um objeto Date
-        const currentDate = new Date(); // Data atual
-        const diffInTime = currentDate.getTime() - loanCreatedAt.getTime(); // Diferença em milissegundos
-        const diffInDays = diffInTime / (1000 * 3600 * 24); // Converte para dias
-
-        return diffInDays < 30; // Retorna true se o prazo de 30 dias não foi atingido
-    };
-
-
-
 
     const filteredLoans = loans.filter(loan =>
         loan.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -170,20 +43,6 @@ const Loans: React.FC = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setIsModalSuccessOpen(false);
-    };
-
-    const handleDownloadContract = async (loanId: string, fullName: string) => {
-        setLoadingId(loanId);
-        try {
-            const { data } = await axios.get(`${apiUrl}/pdfBuilder/${loanId}`, { responseType: 'blob' });
-            const url = URL.createObjectURL(new Blob([data]));
-            Object.assign(document.createElement('a'), { href: url, download: `Contrato de Financiamento ${fullName}.pdf` }).click();
-            URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error("Erro ao baixar contrato:", error);
-        } finally {
-            setLoadingId(null);
-        }
     };
 
     const handleNavigate = () => {
@@ -232,6 +91,11 @@ const Loans: React.FC = () => {
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Conta</th>
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Garantia</th>
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Parcelas</th>
+                                {user.role === 'USER' && (
+                                    <>
+                                        <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Status</th>
+                                    </>
+                                )}
                                 {user.role === 'ADMIN' && (
                                     <>
                                         <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Penhor</th>
@@ -246,11 +110,10 @@ const Loans: React.FC = () => {
                                 const loanCreatedAt = loan.createdAt;
                                 const loanDuration = 30;
                                 const balanceDue = loan.balanceDue;
-                                const {fineAmount } = CalculationOfFines(loanCreatedAt, loanDuration, balanceDue);
+                                const { fineAmount } = CalculationOfFines(loanCreatedAt, loanDuration, balanceDue);
 
                                 return (
                                     <tr key={loan.id}>
-
                                         {user.role === 'ADMIN' && (
                                             <>
                                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">
@@ -278,13 +141,37 @@ const Loans: React.FC = () => {
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.accountNumber}</td>
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.collateral}</td>
                                         <td className="text-xs text-center leading-5 text-gray-500">{loan.installments}</td>
+                                        {user.role === 'USER' && (
+                                            <>
+                                                <td className="px-6 py-4 text-xs leading-5 text-gray-600">
+                                                    <span className="inline-block rounded px-2 py-1 text-xs font-semibold border border-gray-300 bg-gray-100">
+                                                        {{
+                                                            PAID: '✅ PAGO',
+                                                            PENDING: '⏳ PENDENTE',
+                                                            ACTIVE: '📌 ACTIVO',
+                                                            REFUSED: '❌ RECUSADO',
+                                                        }[loan.status] || 'Desconhecido'}
+                                                    </span>
+                                                </td>
+                                            </>
+                                        )}
                                         {user.role === 'ADMIN' && (
                                             <>
                                                 <td className="px-6 py-4 text-center text-xs leading-5 text-gray-500">
                                                     <input
                                                         type="checkbox"
                                                         checked={loan.pawn === 'YES'}
-                                                        onChange={(e) => updatePawnStatus(loan.id, e.target.checked ? 'YES' : 'NO')}
+                                                        onChange={(e) =>
+                                                            updatePawnStatus(
+                                                                loan.id,
+                                                                e.target.checked ? 'YES' : 'NO',
+                                                                apiUrl,
+                                                                () => fetchLoans(apiUrl, user, setLoans),
+                                                                setAlertText,
+                                                                setIsModalSuccessOpen,
+                                                                setIsModalOpen
+                                                            )
+                                                        }
                                                         disabled={isPaymentTermExceeded(loan.createdAt)}
                                                         title={isPaymentTermExceeded(loan.createdAt)
                                                             ? "Você não pode penhorar o usuário antes de 30 dias do empréstimo."
@@ -294,19 +181,28 @@ const Loans: React.FC = () => {
                                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">
                                                     <select
                                                         //@ts-ignore
-                                                        value={loan.isActive}
+                                                        value={loan.status}
                                                         onChange={(e) =>
-                                                            updateLoanStatus(loan.id, e.target.value, {
-                                                                email: loan.customer.email,
-                                                                fullName: loan.customer.fullName,
-                                                            })
+                                                            updateLoanStatus(
+                                                                loan.id,
+                                                                e.target.value,
+                                                                {
+                                                                    email: loan.customer.email,
+                                                                    fullName: loan.customer.fullName,
+                                                                },
+                                                                apiUrl,
+                                                                () => fetchLoans(apiUrl, user, setLoans),
+                                                                setAlertText,
+                                                                setIsModalSuccessOpen,
+                                                                setIsModalOpen
+                                                            )
                                                         }
                                                         className="rounded p-1 bg-white outline-none"
                                                     >
-                                                        <option value="PAID">PAGO</option>
-                                                        <option value="PENDING">PENDENTE</option>
-                                                        <option value="ACTIVE">ACTIVO</option>
-                                                        <option value="REFUSED">RECUSADO</option>
+                                                        <option value="PAID">✅ PAGO</option>
+                                                        <option value="PENDING">⏳ PENDENTE</option>
+                                                        <option value="ACTIVE">📌 ACTIVO</option>
+                                                        <option value="REFUSED">❌ RECUSADO</option>
                                                     </select>
                                                 </td>
                                                 <td className="px-6 py-4 text-lg leading-5 text-gray-500 text-center">
@@ -314,12 +210,29 @@ const Loans: React.FC = () => {
                                                         <DeleteModal
                                                             text="Excluir"
                                                             subtitles="Tem certeza de que deseja excluir?"
-                                                            onSubmit={() => deleteLoan(loan.id, String(loan.isActive))}
+                                                            onSubmit={() =>
+                                                                deleteLoan(
+                                                                    loan.id,
+                                                                    String(loan.status),
+                                                                    apiUrl,
+                                                                    loans,
+                                                                    setLoans,
+                                                                    setAlertText,
+                                                                    setIsModalOpen
+                                                                )
+                                                            }
                                                             id={loan.id}
                                                         />
                                                         |
                                                         <button
-                                                            onClick={() => handleDownloadContract(loan.id, loan.customer.fullName)}
+                                                            onClick={() =>
+                                                                handleDownloadContract(
+                                                                    loan.id,
+                                                                    loan.customer.fullName,
+                                                                    apiUrl,
+                                                                    setLoadingId
+                                                                )
+                                                            }
                                                             className="text-blue-500 hover:text-blue-700 disabled:opacity-50"
                                                             disabled={loadingId === loan.id}
                                                         >
@@ -352,7 +265,6 @@ const Loans: React.FC = () => {
             )}
         </>
     );
-
 };
 
 export default Loans;

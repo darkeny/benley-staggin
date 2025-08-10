@@ -20,7 +20,7 @@ interface Customer {
     identityNumber: string;
     createdAt: string;
     hasActiveLoan: boolean;
-    isActive?: 'PAID' | 'PENDING' | 'ACTIVE' | 'REFUSED';
+    status?: 'PAID' | 'PENDING' | 'ACTIVE' | 'REFUSED';
 }
 
 const Customers: React.FC = () => {
@@ -107,13 +107,23 @@ const Customers: React.FC = () => {
                             {filteredCustomers.map(customer => (
                                 <tr key={customer.id}>
                                     <td className="text-center px-5 text-lg text-gray-500">
-                                        <div className={`w-2 h-2 rounded-full ${
-                                            customer.loan?.isActive === 'ACTIVE' ? 'bg-green-500' :
-                                            customer.loan?.isActive === 'PENDING' ? 'bg-yellow-500' :
-                                            customer.loan?.isActive === 'PAID' ? 'bg-green-500' :
-                                            customer.loan?.isActive === 'REFUSED' ? 'bg-red-500' :
-                                            'bg-gray-500'
-                                        }`} />
+                                        <div
+                                            className={`w-2 h-2 rounded-full ${(() => {
+                                                    const loans = Array.isArray(customer.loan) ? customer.loan : [];
+
+                                                    if (loans.some(l => l.status === 'ACTIVE')) {
+                                                        return 'bg-green-500'; // Pelo menos 1 ativo
+                                                    }
+                                                    if (loans.some(l => l.status === 'REFUSED')) {
+                                                        return 'bg-red-500'; // Nenhum ativo, mas pelo menos 1 recusado
+                                                    }
+                                                    if (loans.length > 0) {
+                                                        return 'bg-yellow-500'; // Tem empréstimos, mas nenhum ativo ou recusado
+                                                    }
+                                                    return 'bg-gray-500'; // Sem empréstimos
+                                                })()
+                                                }`}
+                                        />
                                     </td>
                                     <td className="px-6 py-4 text-xs leading-5 text-gray-500">{customer.fullName}</td>
                                     <td className="px-6 py-4 text-xs leading-5 text-gray-500">{new Date(customer.dateOfBirth).toLocaleDateString()}</td>

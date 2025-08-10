@@ -26,7 +26,8 @@ const handleError = (error: any) => {
             return ERROR_MESSAGES.ThrowActiveLoan;
         }
     }
-    return 'Usuário ou senha incorreto.';
+    return 'Algo deu errado.';
+
 };
 
 export { handleError }
