@@ -110,14 +110,6 @@ const SignUp: React.FC = () => {
         }
 
 
-        // Validação da renda mensal para funcionários
-        if (formData.incomeSource === "Funcionário" && !formData.monthlyIncome) {
-            setAlertText("Renda mensal é obrigatória para funcionários.");
-            setIsModalOpen(true);
-            setLoading(false);
-            return;
-        }
-
         // Validação dos campos do outorgante se for mostrado
         if (showGrantorFields) {
             const grantorFields = [
@@ -355,8 +347,10 @@ const SignUp: React.FC = () => {
                                             className="mt-2 block w-full p-3 rounded-lg border bg-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                         >
                                             <option value="">Selecione</option>
-                                            <option value="Funcionário">Funcionário</option>
                                             <option value="Freelancer">Freelancer</option>
+                                            <option value="Funcionário Público">Funcionário Público</option>
+                                            <option value="Assalariado (Funcionário Privado)">Assalariado (Funcionário Privado)</option>
+                                            <option value="Conta Própria (Autônomo / Empreendedor)">Conta Própria (Autônomo / Empreendedor)</option>
                                         </select>
                                     </div>
                                     <div className="relative">
