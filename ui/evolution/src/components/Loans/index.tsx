@@ -81,9 +81,9 @@ const Loans: React.FC = () => {
                                 {user.role === 'ADMIN' && (
                                     <>
                                         <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Restante</th>
-                                        <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Multa</th>
                                     </>
                                 )}
+                                <th className="px-6 py-3 text-left font-medium text-xs leading-5 text-gray-500">Multa</th>
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Cliente</th>
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Solicitado</th>
                                 <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">A pagar</th>
@@ -107,7 +107,7 @@ const Loans: React.FC = () => {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredLoans.map((loan: Loan) => {
-                                const loanCreatedAt = loan.createdAt;
+                                const loanCreatedAt = loan.activatedAt;
                                 const loanDuration = 30;
                                 const balanceDue = loan.balanceDue;
                                 const { fineAmount } = CalculationOfFines(loanCreatedAt, loanDuration, balanceDue);
@@ -118,22 +118,22 @@ const Loans: React.FC = () => {
                                             <>
                                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">
                                                     <span className={`inline-flex items-center rounded-md px-4 py-2 text-xs font-medium ring-1 ring-inset
-                                                        ${calculateDaysLeft(String(loan.createdAt), 30) > 22
+                                                        ${calculateDaysLeft(String(loan.activatedAt), 30) > 22
                                                             ? 'bg-green-50 text-green-700 ring-green-600/20'
-                                                            : calculateDaysLeft(String(loan.createdAt), 30) > 15
+                                                            : calculateDaysLeft(String(loan.activatedAt), 30) > 15
                                                                 ? 'bg-green-50 text-green-700 ring-green-600/20'
-                                                                : calculateDaysLeft(String(loan.createdAt), 30) > 8
+                                                                : calculateDaysLeft(String(loan.activatedAt), 30) > 8
                                                                     ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20'
-                                                                    : calculateDaysLeft(String(loan.createdAt), 30) > 0
+                                                                    : calculateDaysLeft(String(loan.activatedAt), 30) > 0
                                                                         ? 'bg-orange-50 text-orange-700 ring-orange-600/20'
                                                                         : 'bg-red-50 text-red-700 ring-red-600/20'
                                                         }`}>
-                                                        {calculateDaysLeft(String(loan.createdAt), 30)} dias
+                                                        {calculateDaysLeft(String(loan.activatedAt), 30)} dias
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-xs leading-5 text-gray-500">{fineAmount.toFixed(2)}MT</td>
                                             </>
                                         )}
+                                        <td className="px-6 py-4 text-xs leading-5 text-gray-500">{fineAmount.toFixed(2)}MT</td>
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.customer.fullName}</td>
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.loanAmount.toFixed(2)}MT</td>
                                         <td className="px-6 py-4 text-xs leading-5 text-gray-500">{loan.balanceDue.toFixed(2)}MT</td>
@@ -172,8 +172,8 @@ const Loans: React.FC = () => {
                                                                 setIsModalOpen
                                                             )
                                                         }
-                                                        disabled={isPaymentTermExceeded(loan.createdAt)}
-                                                        title={isPaymentTermExceeded(loan.createdAt)
+                                                        disabled={isPaymentTermExceeded(loan.activatedAt)}
+                                                        title={isPaymentTermExceeded(loan.activatedAt)
                                                             ? "Você não pode penhorar o usuário antes de 30 dias do empréstimo."
                                                             : ""}
                                                     />
