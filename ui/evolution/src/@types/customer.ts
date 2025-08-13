@@ -27,6 +27,7 @@ export interface Loan {
   pawn: string;
   installments: number;
   status: LoanStatus; // <- agora é um status legível
+  activatedAt: Date;
   customerId: string;
   customer: {
     fullName: string;

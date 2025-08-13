@@ -32,16 +32,17 @@ const ClientFinance: React.FC = () => {
 
     const relevantLoan: Loan | undefined = loans.find(l => l.status === "ACTIVE") || loans[0];
 
-    const loanCreatedAt = relevantLoan ? new Date(relevantLoan.createdAt) : null;
+    const loanActivatedAt = relevantLoan ? new Date(relevantLoan.activatedAt) : null;
     const loanDuration = relevantLoan?.paymentTerm || 1;
     const balanceDue = relevantLoan?.balanceDue || 0;
 
-    const { daysDelayed, fineAmount } = loanCreatedAt
-        ? CalculationOfFines(loanCreatedAt, loanDuration, balanceDue)
+    const { daysDelayed, fineAmount } = loanActivatedAt
+        ? CalculationOfFines(loanActivatedAt, loanDuration, balanceDue)
         : { daysDelayed: 0, fineAmount: 0 };
 
+
     const daysLeft = relevantLoan
-        ? calculateDaysLeft(relevantLoan.createdAt, relevantLoan.paymentTerm)
+        ? calculateDaysLeft(relevantLoan.activatedAt, relevantLoan.paymentTerm)
         : 0;
 
     const TotalMultas = fineAmount;
@@ -84,21 +85,19 @@ const ClientFinance: React.FC = () => {
                         </div>
 
                         {/* Empréstimo */}
-                        <div className={`p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ${
-                            relevantLoan?.status === "ACTIVE"
+                        <div className={`p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ${relevantLoan?.status === "ACTIVE"
                                 ? 'bg-green-50 border-green-300 text-green-700'
                                 : relevantLoan?.status === "REFUSED"
-                                ? 'bg-red-50 border-red-400 text-red-700'
-                                : 'bg-gray-50 border-gray-300 text-gray-700'
-                        } border`}>
+                                    ? 'bg-red-50 border-red-400 text-red-700'
+                                    : 'bg-gray-50 border-gray-300 text-gray-700'
+                            } border`}>
                             <div className="flex items-center mb-4">
-                                <GiTakeMyMoney className={`${
-                                    relevantLoan?.status === "ACTIVE"
+                                <GiTakeMyMoney className={`${relevantLoan?.status === "ACTIVE"
                                         ? 'text-green-600'
                                         : relevantLoan?.status === "REFUSED"
-                                        ? 'text-red-600'
-                                        : 'text-gray-500'
-                                }`} size={40} />
+                                            ? 'text-red-600'
+                                            : 'text-gray-500'
+                                    }`} size={40} />
                                 <div className="ml-4">
                                     <h4 className="text-lg font-bold text-gray-700">Empréstimo</h4>
                                     <p className="text-sm font-semibold">
@@ -114,15 +113,13 @@ const ClientFinance: React.FC = () => {
                         </div>
 
                         {/* Poupança */}
-                        <div className={`p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ${
-                            savings.status === "ACTIVE"
+                        <div className={`p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ${savings.status === "ACTIVE"
                                 ? 'bg-orange-50 border-yellow-700 text-yellow-700'
                                 : 'bg-gray-50 border-gray-300 text-gray-700'
-                        } border`}>
+                            } border`}>
                             <div className="flex items-center mb-4">
-                                <PiPiggyBankFill className={`${
-                                    savings.status === "ACTIVE" ? 'text-yellow-600' : 'text-gray-500'
-                                }`} size={40} />
+                                <PiPiggyBankFill className={`${savings.status === "ACTIVE" ? 'text-yellow-600' : 'text-gray-500'
+                                    }`} size={40} />
                                 <div className="ml-4">
                                     <h4 className="text-lg font-bold text-gray-700">Poupança</h4>
                                     <p className="text-sm font-semibold">{savings.status}</p>
@@ -152,8 +149,8 @@ const ClientFinance: React.FC = () => {
                         <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                             <h4 className="text-lg font-bold text-gray-700">Data de Início</h4>
                             <p className="text-gray-500">
-                                {loanCreatedAt
-                                    ? loanCreatedAt.toLocaleDateString('pt-BR')
+                                {loanActivatedAt
+                                    ? loanActivatedAt.toLocaleDateString('pt-BR')
                                     : "Sem datas ainda"}
                             </p>
                         </div>
@@ -162,8 +159,8 @@ const ClientFinance: React.FC = () => {
                         <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
                             <h4 className="text-lg font-bold text-gray-700">Fim</h4>
                             <p className="text-gray-500">
-                                {loanCreatedAt
-                                    ? new Date(loanCreatedAt.getTime() + (loanDuration + 1) * 86400000).toLocaleDateString('pt-BR')
+                                {loanActivatedAt
+                                    ? new Date(loanActivatedAt.getTime() + (loanDuration + 1) * 86400000).toLocaleDateString('pt-BR')
                                     : "Sem datas ainda"}
                             </p>
                         </div>
@@ -184,7 +181,7 @@ const ClientFinance: React.FC = () => {
                             <p className="text-gray-500">
                                 {!relevantLoan?.loanAmount ? 'Sem valor' :
                                     relevantLoan.loanAmount < 1000 ? '0% do valor' :
-                                    relevantLoan.loanAmount < 5000 ? '50% do valor' : '30% do valor'}
+                                        relevantLoan.loanAmount < 5000 ? '50% do valor' : '30% do valor'}
                             </p>
                         </div>
                     </div>

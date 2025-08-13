@@ -1,8 +1,15 @@
 export const CalculationOfFines = (
-    createdAt: Date,
+    createdAt: Date | null,
     loanDuration: number,
-    balanceDue: number
+    balanceDue: number,
+    status: string
 ): { daysDelayed: number; fineAmount: number } => {
+
+    // Se o empréstimo não estiver ativo, não calcula nada
+    if (status !== "ACTIVE" || !createdAt) {
+        return { daysDelayed: 0, fineAmount: 0 };
+    }
+
     const currentDate = new Date();
     const loanStartDate = new Date(createdAt);
 
