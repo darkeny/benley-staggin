@@ -1,5 +1,5 @@
 // Função para calcular os dias restantes
-const calculateDaysLeft = (startDate: Date | null, totalDays: number) => {
+const calculateDaysLeft = (startDate:Date | string | null, totalDays: number) => {
     if (!startDate) return totalDays; // Se ainda não ativou, retorna total
 
     const currentDate = new Date();

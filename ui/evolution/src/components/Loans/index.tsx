@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { FiDownload, FiLoader } from "react-icons/fi";
+import { FiCheckCircle, FiClock, FiDownload, FiLoader, FiXCircle } from "react-icons/fi";
+import { TbPointFilled } from "react-icons/tb";
 import { Alert } from '../Modal/alert';
 import { DeleteModal } from '../Modal/deleteModal';
 import { SuccessAlert } from '../Modal/successAlert';
@@ -143,16 +144,29 @@ const Loans: React.FC = () => {
                                         <td className="text-xs text-center leading-5 text-gray-500">{loan.installments}</td>
                                         {user.role === 'USER' && (
                                             <>
-                                                <td className="px-6 py-4 text-xs leading-5 text-gray-600">
-                                                    <span className="inline-block rounded px-2 py-1 text-xs font-semibold border border-gray-300 bg-gray-100">
+
+                                                <td className="px-6 py-3 text-xs leading-5 text-gray-500">
+                                                    <span
+                                                        className={`
+                                                        inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium border
+                                                        w-[130px] h-[36px] gap-2
+                                                        transition-colors duration-200
+                                                        ${loan.status === "PAID" ? "bg-green-100/50 text-green-700 border-green-200" : ""}
+                                                        ${loan.status === "PENDING" ? "bg-yellow-100/50 text-yellow-700 border-yellow-200" : ""}
+                                                        ${loan.status === "ACTIVE" ? "bg-emerald-100/50 text-emerald-700 border-emerald-200" : ""}
+                                                        ${loan.status === "REFUSED" ? "bg-red-100/50 text-red-700 border-red-200" : ""}
+                                                    `}
+                                                    >
                                                         {{
-                                                            PAID: '✅ PAGO',
-                                                            PENDING: '⏳ PENDENTE',
-                                                            ACTIVE: '📌 ACTIVO',
-                                                            REFUSED: '❌ RECUSADO',
+                                                            PAID: <><FiCheckCircle className="w-4 h-4" /> PAGO</>,
+                                                            PENDING: <><FiClock className="w-4 h-4 flex-shrink-0" /> PENDENTE</>,
+                                                            ACTIVE: <><TbPointFilled className="w-4 h-4" /> ACTIVO</>,
+                                                            REFUSED: <><FiXCircle className="w-4 h-4" /> RECUSADO</>,
                                                         }[loan.status] || 'Desconhecido'}
                                                     </span>
                                                 </td>
+
+
                                             </>
                                         )}
                                         {user.role === 'ADMIN' && (
@@ -179,32 +193,63 @@ const Loans: React.FC = () => {
                                                     />
                                                 </td>
                                                 <td className="px-6 py-4 text-xs leading-5 text-gray-500">
-                                                    <select
-                                                        //@ts-ignore
-                                                        value={loan.status}
-                                                        onChange={(e) =>
-                                                            updateLoanStatus(
-                                                                loan.id,
-                                                                e.target.value,
-                                                                {
-                                                                    email: loan.customer.email,
-                                                                    fullName: loan.customer.fullName,
-                                                                },
-                                                                apiUrl,
-                                                                () => fetchLoans(apiUrl, user, setLoans),
-                                                                setAlertText,
-                                                                setIsModalSuccessOpen,
-                                                                setIsModalOpen
-                                                            )
-                                                        }
-                                                        className="rounded p-1 bg-white outline-none"
-                                                    >
-                                                        <option value="PAID">✅ PAGO</option>
-                                                        <option value="PENDING">⏳ PENDENTE</option>
-                                                        <option value="ACTIVE">📌 ACTIVO</option>
-                                                        <option value="REFUSED">❌ RECUSADO</option>
-                                                    </select>
+                                                    <div className={`
+                                                        relative inline-flex items-center justify-start rounded-lg px-2 py-2 text-sm font-medium border
+                                                        w-[145px] h-[36px] gap-2 transition-colors duration-200
+                                                        ${loan.status === "PAID" ? "bg-green-100/50 text-green-700 border-green-200" : ""}
+                                                        ${loan.status === "PENDING" ? "bg-yellow-100/50 text-yellow-700 border-yellow-200" : ""}
+                                                        ${loan.status === "ACTIVE" ? "bg-emerald-100/50 text-emerald-700 border-emerald-200" : ""}
+                                                        ${loan.status === "REFUSED" ? "bg-red-100/50 text-red-700 border-red-200" : ""}
+                                                    `}>
+
+                                                        {/* Ícone fixo no lado esquerdo */}
+                                                        {{
+                                                            PAID: <FiCheckCircle className="w-5 h-5 flex-shrink-0" />,
+                                                            PENDING: <FiClock className="w-5 h-5 flex-shrink-0" />,
+                                                            ACTIVE: <TbPointFilled className="w-5 h-5 flex-shrink-0" />,
+                                                            REFUSED: <FiXCircle className="w-5 h-5 flex-shrink-0" />,
+                                                        }[loan.status]}
+
+                                                        {/* Select transparente por cima */}
+                                                        <select
+                                                            //@ts-ignore
+                                                            value={loan.status}
+                                                            onChange={(e) =>
+                                                                updateLoanStatus(
+                                                                    loan.id,
+                                                                    e.target.value,
+                                                                    {
+                                                                        email: loan.customer.email,
+                                                                        fullName: loan.customer.fullName,
+                                                                    },
+                                                                    apiUrl,
+                                                                    () => fetchLoans(apiUrl, user, setLoans),
+                                                                    setAlertText,
+                                                                    setIsModalSuccessOpen,
+                                                                    setIsModalOpen
+                                                                )
+                                                            }
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                        >
+                                                            <option value="PAID">PAGO</option>
+                                                            <option value="PENDING">PENDENTE</option>
+                                                            <option value="ACTIVE">ACTIVO</option>
+                                                            <option value="REFUSED">RECUSADO</option>
+                                                        </select>
+
+                                                        {/* Texto exibido ao lado do ícone */}
+                                                        <span className="ml-2">
+                                                            {{
+                                                                PAID: "PAGO",
+                                                                PENDING: "PENDENTE",
+                                                                ACTIVE: "ACTIVO",
+                                                                REFUSED: "RECUSADO",
+                                                            }[loan.status]}
+                                                        </span>
+                                                    </div>
                                                 </td>
+
+
                                                 <td className="px-6 py-4 text-lg leading-5 text-gray-500 text-center">
                                                     <div className="flex items-center justify-center gap-4">
                                                         <DeleteModal
