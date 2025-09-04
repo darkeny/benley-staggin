@@ -21,7 +21,7 @@ interface LoanProps {
 
 const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
   const navigate = useNavigate();
-  const { user } = useFetchUserData(simulador); // true no simulador
+  const { user } = useFetchUserData(simulador);
 
   // se for simulador não precisa de login
   const userId = simulador ? "" : user?.userId;
@@ -47,7 +47,6 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
     }
   }, [userId]);
 
-  const [error, setError] = useState("");
   const [alertText, setAlertText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
@@ -89,6 +88,62 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
   const shouldShowCheckbox = loanAmountValue >= 10000;
   const shouldShowAccountNumberField = formData.paymentMethod !== "";
 
+  const handleLoanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const requiredFields = [
+      { field: "loanAmount", message: "Valor do Empréstimo é obrigatório." },
+      { field: "paymentMethod", message: "Forma de Pagamento é obrigatória." },
+      {
+        field: "accountNumber",
+        message: "Número da Conta é obrigatório.",
+        condition: shouldShowAccountNumberField,
+      },
+      { field: "collateral", message: "Garantia é obrigatória." },
+    ];
+
+    // validação dos campos obrigatórios
+    for (const { field, message, condition = true } of requiredFields) {
+      // @ts-ignore
+      if (condition && (!formData[field] || (field === "loanAmount" && parseFloat(formData.loanAmount) <= 0))) {
+        setAlertText(message);
+        setIsModalOpen(true);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // validação obrigatória das imagens da garantia
+    if (files.length === 0) {
+      setAlertText("Anexe pelo menos uma imagem da garantia.");
+      setIsModalOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    if (simulador) {
+      setAlertText("Simulação concluída com sucesso!");
+      setIsModalSuccessOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    // envio real
+    handleSubmit(
+      e,
+      formData,
+      setAlertText,
+      setIsModalOpen,
+      setIsModalSuccessOpen,
+      setLoading,
+      setFormData,
+      navigate,
+      files,
+      role
+    );
+  };
+
   return (
     <>
       <Navbar />
@@ -109,34 +164,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
             {simulador ? "Simulador de Crédito" : "Solicitação de crédito"}
           </h2>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-
-              if (simulador) {
-                setAlertText(
-                  "Simulação concluída com sucesso!"
-                );
-                setIsModalSuccessOpen(true);
-                return;
-              }
-
-              // envio real
-              handleSubmit(
-                e,
-                formData,
-                setAlertText,
-                setIsModalOpen,
-                setIsModalSuccessOpen,
-                setLoading,
-                setFormData,
-                navigate,
-                files,
-                role
-              );
-            }}
-            className="space-y-6"
-          >
+          <form onSubmit={handleLoanSubmit} className="space-y-6">
             <div>
               <h3 className="lg:text-xl text-md font-bold text-gray-700 mb-4">
                 Informação do Empréstimo
@@ -152,13 +180,11 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                     name="loanAmount"
                     value={formData.loanAmount}
                     onChange={(e) =>
-                      handleInputChange(e, setFormData, setError)
+                      handleInputChange(e, setFormData, () => { })
                     }
                     placeholder="Insira o valor do empréstimo"
-                    required
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   />
-                  {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                 </div>
 
                 {/* encargos e prazo */}
@@ -169,7 +195,6 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                     </label>
                     <input
                       type="number"
-                      name="amount"
                       value={isNaN(encargos) ? 0 : encargos}
                       readOnly
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
@@ -182,7 +207,6 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                     </label>
                     <input
                       type="number"
-                      name="paymentTerm"
                       value={formData.paymentTerm}
                       readOnly
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
@@ -198,8 +222,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                   <select
                     name="paymentMethod"
                     value={formData.paymentMethod}
-                    onChange={(e) => handleInputChange(e, setFormData, setError)}
-                    required
+                    onChange={(e) => handleInputChange(e, setFormData, () => { })}
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                   >
                     <option value="" disabled>
@@ -223,10 +246,9 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       name="accountNumber"
                       value={formData.accountNumber}
                       onChange={(e) =>
-                        handleInputChange(e, setFormData, setError)
+                        handleInputChange(e, setFormData, () => { })
                       }
                       placeholder="Insira o número da conta"
-                      required
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
                   </div>
@@ -242,10 +264,9 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                     name="collateral"
                     value={formData.collateral}
                     onChange={(e) =>
-                      handleInputChange(e, setFormData, setError)
+                      handleInputChange(e, setFormData, () => { })
                     }
                     placeholder="Insira a garantia"
-                    required
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                   />
                 </div>
@@ -259,7 +280,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                         name="isPartialPayment"
                         checked={formData.isPartialPayment}
                         onChange={(e) =>
-                          handleInputChange(e, setFormData, setError)
+                          handleInputChange(e, setFormData, () => { })
                         }
                         className="h-5 w-5 text-blue-600 border-gray-300 rounded"
                         id="isPartialPayment"
