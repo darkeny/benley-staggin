@@ -157,7 +157,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
 
       <div
         data-aos="zoom-in"
-        className="flex justify-center items-center min-h-screen"
+        className="flex justify-center items-center py-6"
       >
         <div className="bg-gradient-to-br from-gray-100 via-white to-gray-100 rounded-lg shadow-xl w-full max-w-screen-xl p-8 mx-4 relative overflow-hidden">
           <h2 className="lg:text-3xl text-xl font-extrabold text-center text-gray-800 mb-6">
