@@ -144,6 +144,9 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
     );
   };
 
+  // cálculo do valor por parcela
+  const valorParcela =
+    formData.installments > 0 ? encargos / formData.installments : 0;
   return (
     <>
       <Navbar />
@@ -188,7 +191,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                 </div>
 
                 {/* encargos e prazo */}
-                <div className="flex flex-col gap-6 md:flex-row md:items-start">
+                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                   <div className="flex-1 relative">
                     <label className="block text-sm font-medium text-gray-700">
                       Encargos a liquidar (MZN)
@@ -197,11 +200,12 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       type="number"
                       value={isNaN(encargos) ? 0 : encargos}
                       readOnly
+                      disabled
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
                   </div>
 
-                  <div className="relative">
+                  <div className="flex-1 relative">
                     <label className="block text-sm font-medium text-gray-700">
                       Prazo de Pagamento (dias)
                     </label>
@@ -209,6 +213,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       type="number"
                       value={formData.paymentTerm}
                       readOnly
+                      disabled
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
                   </div>
@@ -235,24 +240,41 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                   </select>
                 </div>
 
-                {/* número da conta */}
-                {shouldShowAccountNumberField && (
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Número da Conta
-                    </label>
-                    <input
-                      type="text"
-                      name="accountNumber"
-                      value={formData.accountNumber}
-                      onChange={(e) =>
-                        handleInputChange(e, setFormData, () => { })
-                      }
-                      placeholder="Insira o número da conta"
-                      className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
-                    />
-                  </div>
-                )}
+                {/* número da conta + parcela mensal */}
+                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+                  {shouldShowAccountNumberField && (
+                    <div className="flex-1 relative">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Número da Conta
+                      </label>
+                      <input
+                        type="text"
+                        name="accountNumber"
+                        value={formData.accountNumber}
+                        onChange={(e) =>
+                          handleInputChange(e, setFormData, () => { })
+                        }
+                        placeholder="Insira o número da conta"
+                        className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
+                      />
+                    </div>
+                  )}
+
+                  {formData.installments > 0 && (
+                    <div className="flex-2 relative">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Parcela Mensal (MZN)
+                      </label>
+                      <input
+                        type="number"
+                        value={valorParcela.toFixed(2)}
+                        readOnly
+                        disabled
+                        className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
+                      />
+                    </div>
+                  )}
+                </div>
 
                 {/* garantia */}
                 <div className="relative">
@@ -293,6 +315,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       </label>
                     </div>
                   )}
+
 
                   {shouldShowInstallmentsField && (
                     <div className="flex flex-col md:w-1/2">
