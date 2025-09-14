@@ -5,6 +5,7 @@ import { SuccessAlert } from "../../components/Modal/successAlert";
 import { IoCheckmarkDoneOutline } from "react-icons/io5";
 import { useFetchUserData } from "../../utils";
 import { useNavigate } from "react-router-dom";
+import { calculateTotalWithInstallments } from "../../utils/loans/calculateTotalWithInstallments";
 import {
   handleInputChange,
   handleFileChange,
@@ -14,11 +15,17 @@ import {
   FormDataType,
 } from "../../utils/loanUtils";
 
-const Loan: React.FC = () => {
+interface LoanProps {
+  simulador?: boolean;
+}
+
+const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
   const navigate = useNavigate();
-  const { user } = useFetchUserData();
-  const userId = user.userId;
-  const role = user.role;
+  const { user } = useFetchUserData(simulador);
+
+  // se for simulador não precisa de login
+  const userId = simulador ? "" : user?.userId;
+  const role = simulador ? "guest" : user?.role;
 
   const [formData, setFormData] = useState<FormDataType>({
     loanAmount: "",
@@ -31,7 +38,6 @@ const Loan: React.FC = () => {
     customerId: "",
   });
 
-  // Corrigindo customerId dinamicamente após carregamento do usuário
   useEffect(() => {
     if (userId) {
       setFormData((prev) => ({
@@ -41,7 +47,6 @@ const Loan: React.FC = () => {
     }
   }, [userId]);
 
-  const [error, setError] = useState("");
   const [alertText, setAlertText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
@@ -49,53 +54,126 @@ const Loan: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const loanAmountValue = parseFloat(formData.loanAmount);
+
+  // cálculo dos encargos
+  const encargos =
+    formData.installments > 0
+      ? calculateTotalWithInstallments(loanAmountValue, formData.installments)
+      : loanAmountValue > 0
+        ? loanAmountValue * 1.3
+        : 0;
+
+  // atualizar prazo automaticamente
   useEffect(() => {
-    const loanAmountValue = parseFloat(formData.loanAmount);
-    if (!isNaN(loanAmountValue)) {
+    if (formData.installments > 0 || loanAmountValue > 0) {
+      const prazo =
+        formData.installments === 2
+          ? 60
+          : formData.installments === 3
+            ? 90
+            : loanAmountValue > 0
+              ? 30
+              : 0;
+
       setFormData((prev) => ({
         ...prev,
-        paymentTerm: loanAmountValue >= 1000 ? 30 : 0,
+        paymentTerm: prazo,
       }));
     }
-  }, [formData.loanAmount]);
+  }, [formData.installments, loanAmountValue]);
 
-  const loanAmountValue = parseFloat(formData.loanAmount);
-  const shouldShowInstallmentsField = loanAmountValue >= 10000 && !formData.isPartialPayment;
+  const shouldShowInstallmentsField =
+    loanAmountValue >= 10000 && !formData.isPartialPayment;
   const shouldShowCheckbox = loanAmountValue >= 10000;
   const shouldShowAccountNumberField = formData.paymentMethod !== "";
 
+  const handleLoanSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const requiredFields = [
+      { field: "loanAmount", message: "Valor do Empréstimo é obrigatório." },
+      { field: "paymentMethod", message: "Forma de Pagamento é obrigatória." },
+      {
+        field: "accountNumber",
+        message: "Número da Conta é obrigatório.",
+        condition: shouldShowAccountNumberField,
+      },
+      { field: "collateral", message: "Garantia é obrigatória." },
+    ];
+
+    // validação dos campos obrigatórios
+    for (const { field, message, condition = true } of requiredFields) {
+      // @ts-ignore
+      if (condition && (!formData[field] || (field === "loanAmount" && parseFloat(formData.loanAmount) <= 0))) {
+        setAlertText(message);
+        setIsModalOpen(true);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // validação obrigatória das imagens da garantia
+    if (files.length === 0) {
+      setAlertText("Anexe pelo menos uma imagem da garantia.");
+      setIsModalOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    if (simulador) {
+      setAlertText("Simulação concluída com sucesso!");
+      setIsModalSuccessOpen(true);
+      setLoading(false);
+      return;
+    }
+
+    // envio real
+    handleSubmit(
+      e,
+      formData,
+      setAlertText,
+      setIsModalOpen,
+      setIsModalSuccessOpen,
+      setLoading,
+      setFormData,
+      navigate,
+      files,
+      role
+    );
+  };
+
+  // cálculo do valor por parcela
+  const valorParcela =
+    formData.installments > 0 ? encargos / formData.installments : 0;
   return (
     <>
       <Navbar />
-      <div className="hidden md:block absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.200),white)] opacity-20"></div>
-      <div className="hidden md:block absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] bg-white shadow-xl shadow-indigo-600/10 ring-1 ring-indigo-50 sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-left"></div>
-      <div data-aos="zoom-in" className="flex justify-center items-center min-h-screen">
-        <div className="bg-gradient-to-br from-gray-100 via-white to-gray-100 rounded-lg shadow-xl w-full max-w-screen-xl p-8 mx-4 relative overflow-hidden before:content-[''] before:absolute before:w-48 before:h-48 before:bg-gradient-to-r before:from-gray-400 before:to-blue-500 before:opacity-20 before:rounded-full before:top-0 before:left-0 before:-translate-x-1/2 before:-translate-y-1/2 after:content-[''] after:absolute after:w-64 after:h-64 after:bg-gradient-to-r after:from-yellow-400 after:to-red-500 after:opacity-20 after:rounded-full after:bottom-0 after:right-0 after:translate-x-1/2 after:translate-y-1/2">
+
+      {/* aviso modo simulador */}
+      {simulador && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 text-center font-medium">
+          ⚡ Você está no <b>Modo Simulador</b>. Nenhum dado será enviado.
+        </div>
+      )}
+
+      <div
+        data-aos="zoom-in"
+        className="flex justify-center items-center py-6"
+      >
+        <div className="bg-gradient-to-br from-gray-100 via-white to-gray-100 rounded-lg shadow-xl w-full max-w-screen-xl p-8 mx-4 relative overflow-hidden">
           <h2 className="lg:text-3xl text-xl font-extrabold text-center text-gray-800 mb-6">
-            Solicitação de crédito
+            {simulador ? "Simulador de Crédito" : "Solicitação de crédito"}
           </h2>
-          <form
-            onSubmit={(e) =>
-              handleSubmit(
-                e,
-                formData,
-                setAlertText,
-                setIsModalOpen,
-                setIsModalSuccessOpen,
-                setLoading,
-                setFormData,
-                navigate,
-                files,
-                role
-              )
-            }
-            className="space-y-6"
-          >
+
+          <form onSubmit={handleLoanSubmit} className="space-y-6">
             <div>
               <h3 className="lg:text-xl text-md font-bold text-gray-700 mb-4">
                 Informação do Empréstimo
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* valor do empréstimo */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700">
                     Valor do Empréstimo
@@ -104,45 +182,44 @@ const Loan: React.FC = () => {
                     type="number"
                     name="loanAmount"
                     value={formData.loanAmount}
-                    onChange={(e) => handleInputChange(e, setFormData, setError)}
+                    onChange={(e) =>
+                      handleInputChange(e, setFormData, () => { })
+                    }
                     placeholder="Insira o valor do empréstimo"
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   />
-                  {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                 </div>
 
-                <div className="flex flex-col gap-6 md:flex-row md:items-start">
+                {/* encargos e prazo */}
+                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                   <div className="flex-1 relative">
                     <label className="block text-sm font-medium text-gray-700">
                       Encargos a liquidar (MZN)
                     </label>
                     <input
                       type="number"
-                      name="amount"
-                      value={
-                        loanAmountValue < 5000
-                          ? loanAmountValue * 1.5
-                          : loanAmountValue * 1.3
-                      }
+                      value={isNaN(encargos) ? 0 : encargos}
                       readOnly
+                      disabled
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
                   </div>
 
-                  <div className="relative">
+                  <div className="flex-1 relative">
                     <label className="block text-sm font-medium text-gray-700">
                       Prazo de Pagamento (dias)
                     </label>
                     <input
                       type="number"
-                      name="paymentTerm"
                       value={formData.paymentTerm}
                       readOnly
+                      disabled
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
                   </div>
                 </div>
 
+                {/* forma de pagamento */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700">
                     Forma de Pagamento
@@ -150,7 +227,7 @@ const Loan: React.FC = () => {
                   <select
                     name="paymentMethod"
                     value={formData.paymentMethod}
-                    onChange={(e) => handleInputChange(e, setFormData, setError)}
+                    onChange={(e) => handleInputChange(e, setFormData, () => { })}
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                   >
                     <option value="" disabled>
@@ -163,22 +240,43 @@ const Loan: React.FC = () => {
                   </select>
                 </div>
 
-                {shouldShowAccountNumberField && (
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Número da Conta
-                    </label>
-                    <input
-                      type="text"
-                      name="accountNumber"
-                      value={formData.accountNumber}
-                      onChange={(e) => handleInputChange(e, setFormData, setError)}
-                      placeholder="Insira o número da conta"
-                      className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
-                    />
-                  </div>
-                )}
+                {/* número da conta + parcela mensal */}
+                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+                  {shouldShowAccountNumberField && (
+                    <div className="flex-1 relative">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Número da Conta
+                      </label>
+                      <input
+                        type="text"
+                        name="accountNumber"
+                        value={formData.accountNumber}
+                        onChange={(e) =>
+                          handleInputChange(e, setFormData, () => { })
+                        }
+                        placeholder="Insira o número da conta"
+                        className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
+                      />
+                    </div>
+                  )}
 
+                  {formData.installments > 0 && (
+                    <div className="flex-2 relative">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Parcela Mensal (MZN)
+                      </label>
+                      <input
+                        type="number"
+                        value={valorParcela.toFixed(2)}
+                        readOnly
+                        disabled
+                        className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* garantia */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700">
                     Garantia
@@ -187,12 +285,15 @@ const Loan: React.FC = () => {
                     type="text"
                     name="collateral"
                     value={formData.collateral}
-                    onChange={(e) => handleInputChange(e, setFormData, setError)}
+                    onChange={(e) =>
+                      handleInputChange(e, setFormData, () => { })
+                    }
                     placeholder="Insira a garantia"
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                   />
                 </div>
 
+                {/* checkbox e parcelas */}
                 <div className="flex flex-col gap-6 md:flex-row lg:pt-7 md:items-start">
                   {shouldShowCheckbox && (
                     <div className="relative flex items-center gap-2 md:w-1/2">
@@ -200,15 +301,21 @@ const Loan: React.FC = () => {
                         type="checkbox"
                         name="isPartialPayment"
                         checked={formData.isPartialPayment}
-                        onChange={(e) => handleInputChange(e, setFormData, setError)}
+                        onChange={(e) =>
+                          handleInputChange(e, setFormData, () => { })
+                        }
                         className="h-5 w-5 text-blue-600 border-gray-300 rounded"
                         id="isPartialPayment"
                       />
-                      <label htmlFor="isPartialPayment" className="text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="isPartialPayment"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Efectuar Pagamento Integral
                       </label>
                     </div>
                   )}
+
 
                   {shouldShowInstallmentsField && (
                     <div className="flex flex-col md:w-1/2">
@@ -232,7 +339,10 @@ const Loan: React.FC = () => {
                               }
                               className="h-5 w-5 text-blue-600 border-gray-300 rounded"
                             />
-                            <label htmlFor={`installment-${n}`} className="text-sm font-medium text-gray-700">
+                            <label
+                              htmlFor={`installment-${n}`}
+                              className="text-sm font-medium text-gray-700"
+                            >
                               {n} parcelas
                             </label>
                           </div>
@@ -242,7 +352,7 @@ const Loan: React.FC = () => {
                   )}
                 </div>
 
-                {/* Upload imagens garantia */}
+                {/* upload garantia */}
                 <div className="relative">
                   <label className="block text-sm font-medium text-gray-700">
                     Imagens da Garantia
@@ -252,7 +362,9 @@ const Loan: React.FC = () => {
                     onClick={() => handleFileButtonClick(fileInputRef)}
                     className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-600 bg-white hover:bg-blue-50 focus:ring-2 focus:ring-blue-500"
                   >
-                    {files.length > 0 ? "Imagens Carregadas" : "Carregar Imagens"}
+                    {files.length > 0
+                      ? "Imagens Carregadas"
+                      : "Carregar Imagens"}
                     {files.length > 0 && (
                       <IoCheckmarkDoneOutline className="h-6 w-6 inline ml-2 text-green-500" />
                     )}
@@ -266,15 +378,19 @@ const Loan: React.FC = () => {
                     className="hidden"
                   />
                 </div>
-
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3 px-4 text-white font-bold rounded-lg shadow-lg transition-all ${
-                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                  }`}
+                  className={`w-full py-3 px-4 text-white font-bold rounded-lg shadow-lg transition-all ${loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                    }`}
                 >
-                  {loading ? "Enviando..." : "Enviar Solicitação"}
+                  {loading
+                    ? "Enviando..."
+                    : simulador
+                      ? "Simular Solicitação"
+                      : "Enviar Solicitação"}
                 </button>
               </div>
             </div>
@@ -283,14 +399,22 @@ const Loan: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <Alert isOpen={isModalOpen} text={alertText} onClose={() => handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)} />
+        <Alert
+          isOpen={isModalOpen}
+          text={alertText}
+          onClose={() =>
+            handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)
+          }
+        />
       )}
 
       {isModalSuccessOpen && (
         <SuccessAlert
           isOpen={isModalSuccessOpen}
           text={alertText}
-          onClose={() => handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)}
+          onClose={() =>
+            handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)
+          }
         />
       )}
     </>

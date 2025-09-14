@@ -28,6 +28,7 @@ const AppRoutes: React.FC = () => {
                     <Route path={'/services'} element={<Services />} />
                     <Route path={'/howabout'} element={<HowAbout />} />
                     <Route path={'/contact'} element={<Contact />} />
+                    <Route path={'/simulador'} element={<Loan simulador={true} />} />
                     <Route path={'/loan'} element={<PrivateRoute component={Loan} />} />
                     <Route path={'/panel'} element={<PrivateRoute component={Panel} />} />
                     <Route path={'/mypanel'} element={<PrivateRoute component={ClientPanel} />} />

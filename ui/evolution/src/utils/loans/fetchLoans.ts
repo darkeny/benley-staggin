@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Loan } from '../../@types/customer';
 
 export const fetchLoans = async (apiUrl: string, user: any, setLoans: any) => {
   if (!user || !user.role || !user.userId) {
