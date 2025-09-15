@@ -14,6 +14,7 @@ import {
   handleCloseModal,
   FormDataType,
 } from "../../utils/loanUtils";
+import { FaSpinner } from "react-icons/fa6";
 
 interface LoanProps {
   simulador?: boolean;
@@ -90,8 +91,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
 
   const handleLoanSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
+  
     const requiredFields = [
       { field: "loanAmount", message: "Valor do Empréstimo é obrigatório." },
       { field: "paymentMethod", message: "Forma de Pagamento é obrigatória." },
@@ -102,33 +102,41 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
       },
       { field: "collateral", message: "Garantia é obrigatória." },
     ];
-
+  
     // validação dos campos obrigatórios
     for (const { field, message, condition = true } of requiredFields) {
       // @ts-ignore
       if (condition && (!formData[field] || (field === "loanAmount" && parseFloat(formData.loanAmount) <= 0))) {
         setAlertText(message);
         setIsModalOpen(true);
-        setLoading(false);
-        return;
+        return; 
       }
     }
-
+  
     // validação obrigatória das imagens da garantia
     if (files.length === 0) {
       setAlertText("Anexe pelo menos uma imagem da garantia.");
       setIsModalOpen(true);
-      setLoading(false);
       return;
     }
-
+  
+    // validação do valor mínimo
+    const loanAmountValue = parseFloat(formData.loanAmount);
+    if (isNaN(loanAmountValue) || loanAmountValue < 5000) {
+      setAlertText("O valor mínimo para solicitar o empréstimo é de 5000 MT.");
+      setIsModalOpen(true);
+      return;
+    }
+ 
+    setLoading(true);
+  
     if (simulador) {
       setAlertText("Simulação concluída com sucesso!");
       setIsModalSuccessOpen(true);
       setLoading(false);
       return;
     }
-
+  
     // envio real
     handleSubmit(
       e,
@@ -381,16 +389,18 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3 px-4 text-white font-bold rounded-lg shadow-lg transition-all ${loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                    }`}
+                  className="rounded-md bg-blue-500 px-10 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:bg-blue-500 disabled:cursor-not-allowed"
                 >
-                  {loading
-                    ? "Enviando..."
-                    : simulador
-                      ? "Simular Solicitação"
-                      : "Enviar Solicitação"}
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <FaSpinner className="animate-spin h-5 w-5" />
+                      <span className="ml-2">Enviando...</span>
+                    </div>
+                  ) : simulador ? (
+                    "Simular Solicitação"
+                  ) : (
+                    "Enviar Solicitação"
+                  )}
                 </button>
               </div>
             </div>
