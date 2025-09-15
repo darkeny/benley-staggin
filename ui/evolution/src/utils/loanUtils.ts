@@ -112,8 +112,8 @@ export const handleSubmit = async (
   }
 
   const loanAmountValue = parseFloat(formData.loanAmount);
-  if (isNaN(loanAmountValue) || loanAmountValue < 1000) {
-    setAlertText("O valor mínimo para solicitar o empréstimo é de 1000 MT.");
+  if (isNaN(loanAmountValue) || loanAmountValue < 5000) {
+    setAlertText("O valor mínimo para solicitar o empréstimo é de 5000 MT.");
     setIsModalOpen(true);
     return;
   }

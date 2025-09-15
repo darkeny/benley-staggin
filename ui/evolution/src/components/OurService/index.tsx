@@ -26,7 +26,7 @@ const OurServices: React.FC = () => {
                     <div data-aos="slide-left" className="rounded-3xl rounded-t-3xl bg-white/60 p-8 ring-1 ring-gray-900/10 sm:mx-8 sm:rounded-b-none sm:p-10 lg:mx-0 lg:rounded-bl-3xl lg:rounded-tr-none">
                         <h3 id="tier-hobby" className="text-base/7 font-semibold text-indigo-600">Crédito</h3>
                         <p className="md:mt-4 flex items-baseline gap-x-2">
-                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-gray-900">1000 MT</span>
+                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-gray-900">5000 MT</span>
                             <span className="text-sm text-gray-500">/ valor mínimo</span>
                         </p>
                         <p className="md:my-6 my-5  text-sm text-gray-600">Adira já o seu crédito e impulsione os seus investimentos financeiros agora.</p>
