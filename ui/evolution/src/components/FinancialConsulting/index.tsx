@@ -78,7 +78,7 @@ const FinancialConsulting: React.FC = () => {
                 </div>
             </div>
             <div data-aos="fade-up" className="text-center">
-                <Link to={'/consulting'}>
+                <Link to={'#'}>
                     <a className="inline-block rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-500">Marcar consulta agora</a>
                 </Link>
             </div>

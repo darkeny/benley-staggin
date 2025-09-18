@@ -26,10 +26,10 @@ const InvestmentPackages: React.FC = () => {
                     <div data-aos="fade-right" className="rounded-3xl rounded-t-3xl bg-white/60 p-8 ring-1 ring-gray-900/10 sm:mx-8 sm:rounded-b-none sm:p-10 lg:mx-0 lg:rounded-bl-3xl lg:rounded-tr-none">
                         <h3 id="tier-hobby" className="text-xl font-semibold text-indigo-600">Standard</h3>
                         <p className="md:mt-4 flex items-baseline gap-x-2">
-                            <span className="text-2xl md:text-5xl font-extrabold tracking-tight text-gray-900">5.000 mzn</span>
+                            <span className="text-2xl md:text-5xl font-extrabold tracking-tight text-gray-900">10.000 mzn</span>
                             <span className="md:text-base text-sm text-gray-500">/ valor mínimo</span>
                         </p>
-                        <p className="md:mt-6 mt-4 md:text-base/7 text-sm text-gray-600">O plano Standard oferece <strong>3%</strong> de taxa de lucro a ser arecadado todos os meses.</p>
+                        <p className="md:mt-6 mt-4 md:text-base/7 text-sm text-gray-600">O plano Standard oferece <strong>2%</strong> de taxa de lucro a ser arecadado todos os meses.</p>
                         <ul role="list" className="mt-8 md:space-y-3 space-y-2 text-sm/6 text-gray-600 sm:mt-10">
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
@@ -41,7 +41,7 @@ const InvestmentPackages: React.FC = () => {
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
                                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                                 </svg>
-                                3% de taxas de lucro
+                                2% de taxas de lucro
                             </li>
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
@@ -63,10 +63,10 @@ const InvestmentPackages: React.FC = () => {
                     <div data-aos="zoom-in" className="relative rounded-3xl bg-gray-900 p-8 shadow-2xl ring-1 ring-gray-900/10 sm:p-10">
                         <h3 id="tier-enterprise" className="text-xl font-semibold text-indigo-400">Essential</h3>
                         <p className="md:mt-4 flex items-baseline gap-x-2">
-                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-white">25.000 mzn</span>
+                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-white">20.000 mzn</span>
                             <span className="md:text-base text-sm text-gray-400">/ valor mínimo</span>
                         </p>
-                        <p className="md:mt-6 mt-4 md:text-base/7 text-sm text-gray-300">O plano partner oferece <strong>7%</strong> de taxa de lucro a ser arecadado todos os meses.</p>
+                        <p className="md:mt-6 mt-4 md:text-base/7 text-sm text-gray-300">O plano partner oferece <strong>3%</strong> de taxa de lucro a ser arecadado todos os meses.</p>
                         <ul role="list" className="md:py-6 mt-8 md:space-y-3 space-y-2 text-sm/6 text-gray-300 sm:mt-10">
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
@@ -78,7 +78,7 @@ const InvestmentPackages: React.FC = () => {
                                 <svg className="h-6 w-5 flex-none text-indigo-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
                                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                                 </svg>
-                                7% de taxas de lucro
+                                3% de taxas de lucro
                             </li>
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
@@ -101,7 +101,7 @@ const InvestmentPackages: React.FC = () => {
                             <span className="text-2xl md:text-5xl font-semibold tracking-tight text-gray-900">50.000 mzn</span>
                             <span className="md:text-base text-sm text-gray-500">/ valor mínimo</span>
                         </p>
-                        <p className="md:mt-6 mt-4 md:text-base/7 text-sm text-gray-600">O plano premium oferece <strong>10%</strong> de taxa de lucro a ser arecadado todos os meses.</p>
+                        <p className="md:mt-6 mt-4 md:text-base/7 text-sm text-gray-600">O plano premium oferece <strong>4%</strong> de taxa de lucro a ser arecadado todos os meses.</p>
                         <ul role="list" className="mt-8 md:space-y-3 space-y-2 text-sm/6 text-gray-600 sm:mt-10">
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
@@ -113,7 +113,7 @@ const InvestmentPackages: React.FC = () => {
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
                                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                                 </svg>
-                                10% de taxas de Juro
+                                4% de taxas de Juro
                             </li>
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">

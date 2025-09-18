@@ -63,7 +63,7 @@ const OurServices: React.FC = () => {
                     <div data-aos="slide-right" className="relative rounded-3xl bg-gray-900 p-8 shadow-2xl ring-1 ring-gray-900/10 sm:p-10">
                         <h3 id="tier-enterprise" className="text-base/7 font-semibold text-indigo-400">Poupança</h3>
                         <p className="md:my-6 flex items-baseline gap-x-2">
-                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-white">15.000 MT</span>
+                            <span className="text-2xl md:text-5xl font-semibold tracking-tight text-white">10.000 MT</span>
                             <span className="text-sm text-gray-400">/ valor mínimo</span>
                         </p>
                         <p className="md:mt-6 my-4 text-sm text-gray-300">Começe agora investindo connosco com a melhor infraestrutura dedicados para você.</p>
@@ -72,7 +72,7 @@ const OurServices: React.FC = () => {
                                 <svg className="h-6 w-5 flex-none text-indigo-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
                                     <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                                 </svg>
-                                90 dias de contrato
+                                180 dias de contrato
                             </li>
                             <li className="flex gap-x-3">
                                 <svg className="h-6 w-5 flex-none text-indigo-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">

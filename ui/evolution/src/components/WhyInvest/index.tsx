@@ -73,7 +73,7 @@ const WhyInvest: React.FC = () => {
                                     Taxas de lucratividade
                                 </p>
                                 <p className="mt-2 text-xl font-extrabold tracking-tight text-green-500">
-                                    3% a 10%
+                                    2% a 4%
                                 </p>
                                 <ul className="mt-8 space-y-3 text-sm leading-6 text-gray-600">
                                     <a  onClick={() => document.getElementById('packages')?.scrollIntoView({ behavior: 'smooth' })} aria-describedby="tier-enterprise" className="mt-8 block rounded-md px-3.5 py-2.5 text-center text-sm font-semibold text-white ring-1 ring-inset hover:bg-green-600 bg-green-500 ring-green-200 hover:ring-green-300">

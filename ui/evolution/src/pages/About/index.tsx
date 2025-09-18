@@ -4,6 +4,9 @@ import { CoreValues } from "../../components/CoreValues";
 import { WhoWeAre } from "../../components/WhoWeAre";
 import { Partners } from "../../components/Partners";
 import { Footer } from "../../components/Footer";
+import { ForWhom } from "../../components/ForWhom";
+import { InvestmentPackages } from "../../components/InvestmentPackages";
+import { WhyInvest } from "../../components/WhyInvest";
 import { Helmet } from "react-helmet";
 
 const About: React.FC = () => {
@@ -19,6 +22,9 @@ const About: React.FC = () => {
         <WhoWeAre />
       </div>
       <CoreValues />
+      <WhyInvest />
+      <ForWhom />
+      <InvestmentPackages />
       <Partners />
       <Footer />
     </>

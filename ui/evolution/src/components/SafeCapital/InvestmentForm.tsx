@@ -21,9 +21,9 @@ const InvestmentForm: React.FC = () => {
     const getPlanValueRange = (selectedPlan: string) => {
         switch (selectedPlan) {
             case 'Standard':
-                return { min: 5000, max: 24000 };
+                return { min: 10000, max: 19999 };
             case 'Essential':
-                return { min: 25000, max: 49000 };
+                return { min: 20000, max: 49999 };
             case 'Premium':
                 return { min: 50000, max: 100000 };
             default:
@@ -34,11 +34,11 @@ const InvestmentForm: React.FC = () => {
     const getProfitabilityRate = (selectedPlan: string) => {
         switch (selectedPlan) {
             case 'Standard':
-                return 3;
+                return 2;
             case 'Essential':
-                return 7;
+                return 3;
             case 'Premium':
-                return 10;
+                return 4;
             default:
                 return 0;
         }
