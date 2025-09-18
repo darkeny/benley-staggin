@@ -54,9 +54,9 @@ const Contact: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>Fale Connosco | Grupo Benley</title>
+                <title>Fale Connosco | Group Benley</title>
                 <meta name="description" content="Entre em contacto com a Benley Microcrédito. Estamos disponíveis para tirar dúvidas e apoiar suas necessidades financeiras." />
-                <meta name="keywords" content="contacto Benley, fale connosco, Grupo Benley, microcrédito Moçambique" />
+                <meta name="keywords" content="contacto Benley, fale connosco, Group Benley, microcrédito Moçambique" />
             </Helmet>
             <header className="bg-white shadow">
                 <Navbar />

@@ -61,7 +61,7 @@ const WhyInvest: React.FC = () => {
                             <div data-aos="fade-right" className="rounded-3xl bg-white/60 p-8 ring-1 ring-green-500 sm:p-10">
                                 <PiPiggyBankFill className=" md:h-9 md:w-9 h-7 w-7 text-green-500" aria-hidden="true" />
                                 <p className="md:mt-4 mt-3 flex items-baseline ">
-                                    <span className="text-xl font-extrabold tracking-tight text-green-500">Grupo Benley Funding</span>
+                                    <span className="text-xl font-extrabold tracking-tight text-green-500">Group Benley Funding</span>
                                 </p>
                                 <p className="md:mt-6 mt-2 text-base leading-7 text-gray-600">
                                     Taxa de Administração

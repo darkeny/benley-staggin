@@ -41,7 +41,7 @@ const CoreValues: React.FC = () => {
                         {
                             icon: <GiBullseye className="mx-auto h-12 w-9 lg:h-12 lg:w-12 text-indigo-600" />,
                             title: "Missão",
-                            description: "Empoderar sonhos e transformar vidas através de soluções de microcrédito inteligentes e acessíveis. Nosso compromisso é entregar não apenas capital, mas confiança, impulsionando indivíduos e empreendedores a conquistar o sucesso com apoio personalizado e sustentável. Na Grupo Benley, cada passo rumo ao futuro é guiado pela excelência e integridade."
+                            description: "Empoderar sonhos e transformar vidas através de soluções de microcrédito inteligentes e acessíveis. Nosso compromisso é entregar não apenas capital, mas confiança, impulsionando indivíduos e empreendedores a conquistar o sucesso com apoio personalizado e sustentável. Na Group Benley, cada passo rumo ao futuro é guiado pela excelência e integridade."
                         },
                         {
                             icon: <FaEye className="mx-auto h-12 w-9 lg:h-12 lg:w-12 text-indigo-600" />,

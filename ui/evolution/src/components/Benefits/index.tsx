@@ -11,7 +11,7 @@ const Benefits: React.FC = () => {
                 <div className="lg:px-8">
                     <div className="mx-auto grid grid-cols-1 gap-x-8 sm:gap-y-20 lg:grid-cols-2">
                         <div data-aos="slide-right" className="lg:pr-8 lg:pt-7">
-                            <h2 className="text-base text-center md:text-left font-semibold leading-4 text-indigo-600">Grupo Benley</h2>
+                            <h2 className="text-base text-center md:text-left font-semibold leading-4 text-indigo-600">Group Benley</h2>
                             <p className="mt-2 text-xl text-center md:text-left font-bold tracking-tight text-gray-900 md:text-4xl">A melhor solução</p>
                             <p className="my-5 lg:text-lg text-sm lg:text-justify text-center lg:leading-8 leading-7 text-gray-600">Obtenha o crédito que vai transformar seus projetos em realidade. Nosso processo é rápido, confiável e pensado para atender às suas necessidades financeiras.</p>
                             <dl className="space-y-5 text-base leading-7 text-gray-600 ">

@@ -26,9 +26,9 @@ export function Home() {
   return (
     <>
       <Helmet>
-        <title>Grupo Benley | Microcrédito Rápido em Moçambique</title>
-        <meta name="description" content="Benley Microcrédito oferece soluções rápidas e seguras para capital pessoal e empresarial. Grupo Benley é sua ponte para o sucesso financeiro." />
-        <meta name="keywords" content="Benley, Grupo Benley, microcrédito, Moçambique, dinheiro, capital, cooperativa de poupança e crédito, poupança, crédito,  empréstimo rápido" />
+        <title>Group Benley | Microcrédito Rápido em Moçambique</title>
+        <meta name="description" content="Benley Microcrédito oferece soluções rápidas e seguras para capital pessoal e empresarial. Group Benley é sua ponte para o sucesso financeiro." />
+        <meta name="keywords" content="Benley, Group Benley, microcrédito, Moçambique, dinheiro, capital, cooperativa de poupança e crédito, poupança, crédito,  empréstimo rápido" />
       </Helmet>
       <div className="container mx-auto px-4">
         <Navbar />
@@ -160,7 +160,7 @@ export function Home() {
               Garanta um futuro seguro
             </h3>
             <p className="text-sm md:text-lg leading-7 text-gray-600 mt-4">
-              Proteja seus sonhos! Comece a poupar hoje e veja seu dinheiro crescer com confiança. Com a Grupo Benley, seu futuro está mais próximo de você.
+              Proteja seus sonhos! Comece a poupar hoje e veja seu dinheiro crescer com confiança. Com a Group Benley, seu futuro está mais próximo de você.
             </p>
             <Link to={"/services"}>
               <button className="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 md:py-3 px-3 md:px-8 rounded-lg shadow-lg text-base md:text-lg md:mt-6 mt-3 transition-all duration-300">

@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
                         <a href='/' className="flex flex-1 items-center justify-start">
                             <div className="flex flex-shrink-0 items-center">
                                 <img className="h-28 w-auto" src="/logo-benley.png" alt="Your Company" />
-                                <span className='mr-5 block text-sm font-extrabold leading-6 px-3 py-2 hover:text-blue-500 whitespace-nowrap'> Grupo Benley</span>
+                                <span className='mr-5 block text-sm font-extrabold leading-6 px-3 py-2 hover:text-blue-500 whitespace-nowrap'> Group Benley</span>
                             </div>
                         </a>
 

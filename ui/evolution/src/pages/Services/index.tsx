@@ -13,7 +13,7 @@ const Services: React.FC = () => {
             <Helmet>
                 <title>Serviços | Benley Microcrédito em Moçambique</title>
                 <meta name="description" content="Conheça os serviços oferecidos pela Benley, desde microcréditos até gestão financeira para empresas e particulares." />
-                <meta name="keywords" content="Benley serviços, Grupo Benley, microcrédito, gestão financeira, Moçambique" />
+                <meta name="keywords" content="Benley serviços, Group Benley, microcrédito, gestão financeira, Moçambique" />
             </Helmet>
             <div className="container mx-auto px-4">
                 <Navbar />
