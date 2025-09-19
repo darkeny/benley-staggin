@@ -222,9 +222,9 @@ const SignUp: React.FC = () => {
     return (
         <>
             <Helmet>
-                <title>Criar Conta | Grupo Benley Microcrédito</title>
-                <meta name="description" content="Cadastre-se na plataforma do Grupo Benley e tenha acesso rápido a microcréditos, investimentos e gestão financeira personalizada em Moçambique." />
-                <meta name="keywords" content="cadastro Benley, criar conta, microcrédito Moçambique, Grupo Benley, inscrever, acesso, crédito rápido, financiamento" />
+                <title>Criar Conta | Group Benley Microcrédito</title>
+                <meta name="description" content="Cadastre-se na plataforma do Group Benley e tenha acesso rápido a microcréditos, investimentos e gestão financeira personalizada em Moçambique." />
+                <meta name="keywords" content="cadastro Benley, criar conta, microcrédito Moçambique, Group Benley, inscrever, acesso, crédito rápido, financiamento" />
             </Helmet>
             <div className="p-3">
                 <Navbar />

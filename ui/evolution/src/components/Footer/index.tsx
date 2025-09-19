@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
                         alt="Logo"
                         className="md:w-10 md:h-10 h-8 w-8 lg:pb-2"
                     />
-                    <h2 className="md:text-xl font-semibold md:mt-0 text-center md:text-left">Grupo Benley</h2>
+                    <h2 className="md:text-xl font-semibold md:mt-0 text-center md:text-left">Group Benley</h2>
                 </div>
 
                 {/* Solutions */}
@@ -60,7 +60,7 @@ const Footer: React.FC = () => {
 
             <div className="flex px-5 justify-center text-sm  lg:mt-8 mt-4 border-t border-gray-700 pt-4 text-center text-gray-400">
                 <div className="ma">
-                    <p>&copy; {new Date().getFullYear()} Grupo Benley. Todos os direitos reservados.</p>
+                    <p>&copy; {new Date().getFullYear()} Group Benley. Todos os direitos reservados.</p>
                 </div>
             </div>
         </footer>

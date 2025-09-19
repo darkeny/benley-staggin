@@ -25,7 +25,7 @@ const ForWhom: React.FC = () => {
                     <h2 className="text-base font-semibold leading-4 text-indigo-400">Ideal para quem?</h2>
                     <p className="mt-2 font-bold tracking-tight text-white text-xl md:text-5xl">Quem pode se beneficiar dos nossos serviços?</p>
                     <p className="md:mt-6  mt-4 md:text-base/7 text-sm text-gray-300 leading-8 max-w-2xl mx-auto">
-                        A Grupo Benley é dedicado a apoiar indivíduos e empresas em diferentes estágios de crescimento e necessidades.
+                        A Group Benley é dedicado a apoiar indivíduos e empresas em diferentes estágios de crescimento e necessidades.
                     </p>
                 </div>
             </div>

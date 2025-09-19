@@ -50,7 +50,7 @@ const Statistics: React.FC = () => {
       <div className="text-center" data-aos="zoom-in">
         <h2 className="text-base text-center font-semibold leading-4 text-indigo-600">Nossos números</h2>
         <h3 className="font-bold tracking-tight text-xl md:text-xl py-1 lg:text-4xl text-gray-900">Estatisticas dos serviços</h3>
-        <p className="text-gray-600 mt-2">Fique por dentro dos números importantes da Grupo Benley.</p>
+        <p className="text-gray-600 mt-2">Fique por dentro dos números importantes da Group Benley.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mt-10 text-center">
         <div className="flex flex-col items-center py-6 rounded-lg shadow-lg" data-aos="zoom-in">

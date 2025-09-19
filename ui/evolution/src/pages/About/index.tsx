@@ -13,9 +13,9 @@ const About: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Sobre o Grupo Benley | Sua Fonte de Capital</title>
+        <title>Sobre o Group Benley | Sua Fonte de Capital</title>
         <meta name="description" content="Conheça a história e missão da Benley Microcrédito. Um grupo dedicado a apoiar o crescimento econômico em Moçambique." />
-        <meta name="keywords" content="Grupo Benley, sobre Benley, microcrédito, história, missão, Moçambique" />
+        <meta name="keywords" content="Group Benley, sobre Benley, microcrédito, história, missão, Moçambique" />
       </Helmet>
       <div className="container mx-auto px-4 sm:px-8">
         <Navbar />

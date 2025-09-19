@@ -18,13 +18,13 @@ const WhoWeAre: React.FC = () => {
                 <div  className=":pr-8= lg:pt-7">
                     <div className="lg:max-w-screen-2xl">
                         <h2 className="text-base text-center md:text-left font-semibold leading-4 text-indigo-600">
-                            Grupo Benley
+                            Group Benley
                         </h2>
                         <p className="mt-2 text-2xl text-center md:text-left font-bold tracking-tight text-gray-900 md:text-4xl">
                             Quem somos?
                         </p>
                         <p className="my-5 md:text-lg text-sm text-justify md:leading-8 leading-7 text-gray-800">
-                            A Grupo Benley é uma organização de poupança e crédito dedicada a transformar sonhos em realidade. Oferecemos microcréditos acessíveis e atendimento personalizado para apoiar indivíduos e pequenas empresas. Com foco na poupança responsável e condições justas, somos parceiros no sucesso financeiro de nossos clientes.
+                            A Group Benley é uma organização de poupança e crédito dedicada a transformar sonhos em realidade. Oferecemos microcréditos acessíveis e atendimento personalizado para apoiar indivíduos e pequenas empresas. Com foco na poupança responsável e condições justas, somos parceiros no sucesso financeiro de nossos clientes.
                         </p>
 
                         {/* Botão Solicitar Crédito */}
