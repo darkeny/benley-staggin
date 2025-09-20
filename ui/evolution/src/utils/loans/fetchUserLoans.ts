@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Loan } from "../../@types/customer";
 
 export const fetchUserLoans = async (apiUrl: string, user: any) => {
     if (!user || !user.userId) {

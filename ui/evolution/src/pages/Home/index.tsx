@@ -11,7 +11,7 @@ import { CoreValues } from "../../components/CoreValues";
 import { Newsletter } from "../../components/Newslleter";
 import { WhoWeAre } from "../../components/WhoWeAre";
 import { Statistics } from "../../components/Statistics";
-import { Helmet } from "react-helmet"
+import { Helmet } from 'react-helmet-async';
 
 export function Home() {
   const [showModal, setShowModal] = useState(false);

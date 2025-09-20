@@ -5,7 +5,7 @@ import { OurServices } from "../../components/OurService";
 import { FinancialConsulting } from "../../components/FinancialConsulting";
 import { ConsultingModal } from "../../components/Modal/ConsultingModal";
 import { CapitalSeguro } from "../../components/SafeCapital";
-import { Helmet } from "react-helmet";
+import { Helmet } from 'react-helmet-async';
 
 const Services: React.FC = () => {
     return (

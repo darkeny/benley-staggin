@@ -7,7 +7,7 @@ import { FaSpinner } from "react-icons/fa6";
 import { handleError } from "../../handleError";
 import { useNavigate } from 'react-router-dom';
 import { IoCheckmarkDoneOutline } from "react-icons/io5";
-import { Helmet } from "react-helmet";
+import { Helmet } from 'react-helmet-async';
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const SignUp: React.FC = () => {
