@@ -7,7 +7,7 @@ import { Footer } from "../../components/Footer";
 import { ForWhom } from "../../components/ForWhom";
 import { InvestmentPackages } from "../../components/InvestmentPackages";
 import { WhyInvest } from "../../components/WhyInvest";
-import { Helmet } from "react-helmet";
+import { Helmet } from 'react-helmet-async';
 
 const About: React.FC = () => {
   return (

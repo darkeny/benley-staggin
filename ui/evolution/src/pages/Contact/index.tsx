@@ -4,7 +4,7 @@ import axios from 'axios';
 import { FaSpinner } from 'react-icons/fa';
 import { Navbar } from '../../components/Navbar';
 import { SuccessAlert } from '../../components/Modal/successAlert';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 const Contact: React.FC = () => {
     const [subject, setSubject] = useState('');
