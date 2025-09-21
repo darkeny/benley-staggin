@@ -21,6 +21,7 @@ const Loans: React.FC = () => {
     const navigate = useNavigate();
     const [loans, setLoans] = useState<Loan[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [statusFilter, setStatusFilter] = useState<string>('ALL'); // 👈 filtro inicial
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
@@ -31,7 +32,6 @@ const Loans: React.FC = () => {
     useEffect(() => {
         if (user?.role && user?.userId) {
             fetchLoans(apiUrl, user, (data: Loan[]) => {
-                // Normaliza installments para garantir que seja array
                 const normalized = data.map(loan => ({
                     ...loan,
                     installments: Array.isArray(loan.installments) ? loan.installments : [],
@@ -45,9 +45,16 @@ const Loans: React.FC = () => {
         setSearchTerm(e.target.value);
     };
 
-    const filteredLoans = loans.filter(loan =>
-        loan.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setStatusFilter(e.target.value);
+    };
+
+    // 🔎 filtro combinado por nome + status
+    const filteredLoans = loans.filter(loan => {
+        const matchesName = loan.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === "ALL" || loan.status === statusFilter;
+        return matchesName && matchesStatus;
+    });
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -72,15 +79,28 @@ const Loans: React.FC = () => {
                     )}
                 </div>
 
-                <div className="relative text-gray-600 my-2">
+                {/* 🔎 search + filtro */}
+                <div className="flex gap-2 my-2">
                     <input
                         type="search"
                         name="search"
                         placeholder="Pesquisar por cliente..."
                         value={searchTerm}
                         onChange={handleSearchChange}
-                        className="border-2 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none w-full"
+                        className="border-2 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none w-full"
                     />
+
+                    <select
+                        value={statusFilter}
+                        onChange={handleStatusChange}
+                        className="border-2 bg-white h-10 px-3 rounded-lg text-sm focus:outline-none"
+                    >
+                        <option value="ALL">Todos</option>
+                        <option value="ACTIVE">Activos</option>
+                        <option value="PENDING">Pendentes</option>
+                        <option value="PAID">Pagos</option>
+                        <option value="REFUSED">Recusados</option>
+                    </select>
                 </div>
 
                 <div className="overflow-x-auto md:overflow-visible md:shadow-2xl">
