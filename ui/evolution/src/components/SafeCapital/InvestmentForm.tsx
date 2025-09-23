@@ -4,17 +4,19 @@ const InvestmentForm: React.FC = () => {
     const [plan, setPlan] = useState('');
     const [investmentValue, setInvestmentValue] = useState('');
     const [error, setError] = useState('');
+    const [finalAmount, setFinalAmount] = useState<number | null>(null);
+    const [monthlyInterest, setMonthlyInterest] = useState<number | null>(null);
 
     const getPlanDuration = (selectedPlan: string) => {
         switch (selectedPlan) {
             case 'Standard':
-                return '3 meses de contrato';
+                return 3;
             case 'Essential':
-                return '6 meses de contrato';
+                return 6;
             case 'Premium':
-                return '12 meses de contrato';
+                return 12;
             default:
-                return '';
+                return 0;
         }
     };
 
@@ -34,11 +36,11 @@ const InvestmentForm: React.FC = () => {
     const getProfitabilityRate = (selectedPlan: string) => {
         switch (selectedPlan) {
             case 'Standard':
-                return 2;
+                return 2; // 2% ao mês
             case 'Essential':
-                return 3;
+                return 3; // 3% ao mês
             case 'Premium':
-                return 4;
+                return 4; // 4% ao mês
             default:
                 return 0;
         }
@@ -52,16 +54,26 @@ const InvestmentForm: React.FC = () => {
 
         if (value < min || value > max) {
             setError(`O valor do investimento deve estar entre ${min} e ${max} meticais para o plano ${plan}.`);
+            setFinalAmount(null);
+            setMonthlyInterest(null);
         } else {
             setError('');
-            alert(`Plano: ${plan}, Valor: ${investmentValue}, Duração: ${getPlanDuration(plan)}, Rentabilidade: ${getProfitabilityRate(plan)}%`);
+            const meses = getPlanDuration(plan);
+            const taxa = getProfitabilityRate(plan);
+
+            // Juros simples
+            const jurosMensais = value * (taxa / 100);
+            const acumulado = value + (jurosMensais * meses);
+
+            setMonthlyInterest(jurosMensais);
+            setFinalAmount(acumulado);
         }
     };
 
     return (
         <div className="flex justify-center items-center">
             <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg">
-                <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">Investimento</h2>
+                <h2 className="text-2xl font-bold text-center text-indigo-700 mb-6">Simulador de Investimento</h2>
 
                 <div className="mb-6">
                     <label htmlFor="plan" className="block text-sm font-medium text-gray-700 mb-2">Plano de Investimento</label>
@@ -80,15 +92,10 @@ const InvestmentForm: React.FC = () => {
                 </div>
 
                 {plan && (
-                    <p className="mb-6 text-sm text-gray-600 italic">
-                        Duração do plano: {getPlanDuration(plan)}
-                    </p>
-                )}
-
-                {plan && (
                     <div className="mb-6">
+                        <p className="text-sm text-gray-600">Rentabilidade: {getProfitabilityRate(plan)}% ao mês</p>
+                        <p className="text-sm text-gray-600">Vigência do contracto: {getPlanDuration(plan)} meses</p>
                         <p className="text-sm text-gray-600">Valor do investimento: entre {getPlanValueRange(plan).min} e {getPlanValueRange(plan).max} meticais.</p>
-                        <p className="text-sm text-gray-600">Rentabilidade: {getProfitabilityRate(plan)}%</p>
                     </div>
                 )}
 
@@ -107,6 +114,19 @@ const InvestmentForm: React.FC = () => {
 
                 {error && (
                     <p className="mb-6 text-red-600 text-sm">{error}</p>
+                )}
+
+                {finalAmount !== null && monthlyInterest !== null && !error && (
+                    <div className="mb-6 bg-indigo-50 p-4 rounded-lg shadow-inner">
+                        <p className="text-indigo-700 font-semibold">Resultado:</p>
+                        <p className="text-gray-700 text-sm">
+                            Juros recebidos por mês: <strong className="text-green-600">{monthlyInterest.toFixed(2)} Meticais</strong>
+                        </p>
+                        <p className="text-gray-700 text-sm">
+                            Após <strong>{getPlanDuration(plan)} meses</strong>, você terá conquistado um total de::
+                        </p>
+                        <p className="text-green-600 font-bold text-lg pt-3">{finalAmount.toFixed(2)} Meticais</p>
+                    </div>
                 )}
 
                 <button

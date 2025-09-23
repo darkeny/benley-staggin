@@ -40,19 +40,41 @@ const CapitalSeguro: React.FC = () => {
                 </div>
 
                 {/* Coluna da imagem ou formulário */}
-                <div data-aos="fade-right" className="flex justify-center items-center min-h-screen" style={{ minHeight: "624px" }}>
+                <div
+                    data-aos="fade-right"
+                    className="flex justify-center items-center min-h-screen"
+                    style={{ minHeight: "624px" }}
+                >
                     {showForm ? (
                         <div className="w-full max-w-lg p-6">
                             <InvestmentForm />
                         </div>
                     ) : (
-                        <img
-                            src="/saving.png" // Substitua pelo link real da imagem
-                            alt="Capital Seguro"
-                            className="max-w-full h-auto"
-                        />
+                        <div className="relative rounded-2xl p-[3px] overflow-hidden group">
+                            {/* Borda LED dinâmica */}
+                            <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                                {/* Topo */}
+                                <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-[move1_3s_linear_infinite]"></div>
+                                {/* Base */}
+                                <div className="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-pink-500 via-blue-500 to-purple-500 animate-[move2_4s_linear_infinite]"></div>
+                                {/* Lateral esquerda */}
+                                <div className="absolute top-0 left-0 h-full w-[3px] bg-gradient-to-b from-purple-500 via-pink-500 to-blue-500 animate-[move3_5s_linear_infinite]"></div>
+                                {/* Lateral direita */}
+                                <div className="absolute top-0 right-0 h-full w-[3px] bg-gradient-to-b from-blue-500 via-pink-500 to-purple-500 animate-[move4_6s_linear_infinite]"></div>
+                            </div>
+
+                            {/* Conteúdo da imagem */}
+                            <div className="relative rounded-2xl overflow-hidden bg-white shadow-xl transform transition duration-500 group-hover:rotate-3 group-hover:scale-105 group-hover:-translate-y-1">
+                                <img
+                                    src="/front-view-happy-parents-kids.jpg"
+                                    alt="Capital Seguro"
+                                    className="w-full h-auto object-cover rounded-2xl"
+                                />
+                            </div>
+                        </div>
                     )}
                 </div>
+
             </div>
         </div>
     );
