@@ -1,4 +1,5 @@
 export interface Installment {
+  paymentDate: string | number | Date;
   id: string;
   loanId: string;
   installmentNumber: number;
@@ -7,6 +8,7 @@ export interface Installment {
   fine?: number; // multa da parcela
   paid: boolean;
 }
+
 export type LoanStatus = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'PAID';
 
 export interface Loan {
