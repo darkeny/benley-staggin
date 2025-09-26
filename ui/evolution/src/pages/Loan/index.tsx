@@ -91,7 +91,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
 
   const handleLoanSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     const requiredFields = [
       { field: "loanAmount", message: "Valor do Empréstimo é obrigatório." },
       { field: "paymentMethod", message: "Forma de Pagamento é obrigatória." },
@@ -102,24 +102,24 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
       },
       { field: "collateral", message: "Garantia é obrigatória." },
     ];
-  
+
     // validação dos campos obrigatórios
     for (const { field, message, condition = true } of requiredFields) {
       // @ts-ignore
       if (condition && (!formData[field] || (field === "loanAmount" && parseFloat(formData.loanAmount) <= 0))) {
         setAlertText(message);
         setIsModalOpen(true);
-        return; 
+        return;
       }
     }
-  
+
     // validação obrigatória das imagens da garantia
     if (files.length === 0) {
       setAlertText("Anexe pelo menos uma imagem da garantia.");
       setIsModalOpen(true);
       return;
     }
-  
+
     // validação do valor mínimo
     const loanAmountValue = parseFloat(formData.loanAmount);
     if (isNaN(loanAmountValue) || loanAmountValue < 5000) {
@@ -127,16 +127,16 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
       setIsModalOpen(true);
       return;
     }
- 
+
     setLoading(true);
-  
+
     if (simulador) {
       setAlertText("Simulação concluída com sucesso!");
       setIsModalSuccessOpen(true);
       setLoading(false);
       return;
     }
-  
+
     // envio real
     handleSubmit(
       e,
@@ -248,7 +248,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                   </select>
                 </div>
 
-                {/* número da conta + parcela mensal */}
+                {/* garantia */}
                 <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                   {shouldShowAccountNumberField && (
                     <div className="flex-1 relative">
@@ -267,7 +267,25 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       />
                     </div>
                   )}
+                  <div className="flex-1 relative">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Garantia
+                    </label>
+                    <input
+                      type="text"
+                      name="collateral"
+                      value={formData.collateral}
+                      onChange={(e) =>
+                        handleInputChange(e, setFormData, () => { })
+                      }
+                      placeholder="Insira a garantia"
+                      className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
+                    />
+                  </div>
+                </div>
 
+                {/* número da conta + parcela mensal */}
+                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                   {formData.installments > 0 && (
                     <div className="flex-2 relative">
                       <label className="block text-sm font-medium text-gray-700">
@@ -284,22 +302,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                   )}
                 </div>
 
-                {/* garantia */}
-                <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Garantia
-                  </label>
-                  <input
-                    type="text"
-                    name="collateral"
-                    value={formData.collateral}
-                    onChange={(e) =>
-                      handleInputChange(e, setFormData, () => { })
-                    }
-                    placeholder="Insira a garantia"
-                    className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
-                  />
-                </div>
+
 
                 {/* checkbox e parcelas */}
                 <div className="flex flex-col gap-6 md:flex-row lg:pt-7 md:items-start">
