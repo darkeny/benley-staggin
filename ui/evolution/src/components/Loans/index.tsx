@@ -122,8 +122,8 @@ const Loans: React.FC = () => {
                                 {user.role === 'ADMIN' && <>
                                     {/* <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Penhor</th> */}
                                     <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Status</th>
-                                    <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Acções</th>
                                 </>}
+                                <th className="px-6 py-3 text-center font-medium text-xs leading-5 text-gray-500">Acções</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -264,22 +264,24 @@ const Loans: React.FC = () => {
                                                         }[loan.status]}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-lg leading-5 text-gray-500 text-center">
-                                                    <div className="flex items-center justify-center gap-4">
-                                                        <button
-                                                            onClick={() => {
-                                                                if (expandedLoanId === loan.id) {
-                                                                    setExpandedLoanId(null);
-                                                                } else {
-                                                                    setExpandedLoanId(loan.id);
-                                                                    setInstallments(loan.installmentsList || []);
-                                                                }
-                                                            }}
-                                                            className="text-green-500 hover:text-green-700"
-                                                            title="Ver parcelas"
-                                                        >
-                                                            <FcSurvey className="w-5 h-5" />
-                                                        </button>
+                                            </>}
+                                            <td className="px-6 py-4 text-lg leading-5 text-gray-500 text-center">
+                                                <div className="flex items-center justify-center gap-4">
+                                                    <button
+                                                        onClick={() => {
+                                                            if (expandedLoanId === loan.id) {
+                                                                setExpandedLoanId(null);
+                                                            } else {
+                                                                setExpandedLoanId(loan.id);
+                                                                setInstallments(loan.installmentsList || []);
+                                                            }
+                                                        }}
+                                                        className="text-green-500 hover:text-green-700"
+                                                        title="Ver parcelas"
+                                                    >
+                                                        <FcSurvey className="w-5 h-5" />
+                                                    </button>
+                                                    {user.role === 'ADMIN' && <>
                                                         |
                                                         <DeleteModal
                                                             text="Excluir"
@@ -316,9 +318,10 @@ const Loans: React.FC = () => {
                                                                 <FiDownload className="w-5 h-5" />
                                                             )}
                                                         </button>
-                                                    </div>
-                                                </td>
-                                            </>}
+                                                    </>}
+                                                </div>
+                                            </td>
+
                                         </tr>
 
                                         {/* Tabela suspensa de parcelas */}
@@ -356,21 +359,29 @@ const Loans: React.FC = () => {
                                                                             {inst.paymentDate ? new Date(inst.paymentDate).toLocaleDateString() : '-'}
                                                                         </td>
                                                                         <td className="px-4 py-2 text-xs text-center">
-                                                                            <button
-                                                                                onClick={() =>
-                                                                                    markInstallmentAsPaid(inst.id, installments, {
-                                                                                        setInstallments,
-                                                                                        setAlertText,
-                                                                                        setIsModalSuccessOpen,
-                                                                                        setIsModalOpen,
-                                                                                    })
-                                                                                }
-                                                                                className={`text-2xl hover:opacity-70 ${inst.paid ? 'text-green-500' : 'text-red-500'
-                                                                                    }`}
-                                                                                title={inst.paid ? 'Pago' : 'Não pago'}
-                                                                            >
-                                                                                {inst.paid ? <FiCheckCircle /> : <FiXCircle />}
-                                                                            </button>
+                                                                            {user.role === 'ADMIN' ? (
+                                                                                <button
+                                                                                    onClick={() =>
+                                                                                        markInstallmentAsPaid(inst.id, installments, {
+                                                                                            setInstallments,
+                                                                                            setAlertText,
+                                                                                            setIsModalSuccessOpen,
+                                                                                            setIsModalOpen,
+                                                                                        })
+                                                                                    }
+                                                                                    className={`inline-block w-6 h-6 p-0 text-2xl hover:opacity-70 ${inst.paid ? 'text-green-500' : 'text-red-500'}`}
+                                                                                    title={inst.paid ? 'Pago' : 'Não pago'}
+                                                                                >
+                                                                                    {inst.paid ? <FiCheckCircle className="w-full h-full" /> : <FiXCircle className="w-full h-full" />}
+                                                                                </button>
+                                                                            ) : (
+                                                                                <span
+                                                                                    className={`inline-block w-6 h-6 text-2xl ${inst.paid ? 'text-green-500' : 'text-red-500'}`}
+                                                                                    title={inst.paid ? 'Pago' : 'Não pago'}
+                                                                                >
+                                                                                    {inst.paid ? <FiCheckCircle className="w-full h-full" /> : <FiXCircle className="w-full h-full" />}
+                                                                                </span>
+                                                                            )}
                                                                         </td>
                                                                     </tr>
                                                                 ))}
