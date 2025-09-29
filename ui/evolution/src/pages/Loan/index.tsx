@@ -55,6 +55,10 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // novo estado e ref para comprovativo
+  const [incomeProof, setIncomeProof] = useState<File | null>(null);
+  const incomeProofRef = useRef<HTMLInputElement>(null);
+
   const loanAmountValue = parseFloat(formData.loanAmount);
 
   // cálculo dos encargos
@@ -120,6 +124,13 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
       return;
     }
 
+    // validação obrigatória do comprovativo
+    if (!incomeProof) {
+      setAlertText("Por favor, envie o comprovativo de rendimentos ou extrato bancário dos últimos 2 a 3 meses..");
+      setIsModalOpen(true);
+      return;
+    }
+
     // validação do valor mínimo
     const loanAmountValue = parseFloat(formData.loanAmount);
     if (isNaN(loanAmountValue) || loanAmountValue < 5000) {
@@ -147,7 +158,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
       setLoading,
       setFormData,
       navigate,
-      files,
+      [...files, ...(incomeProof ? [incomeProof] : [])], // envia junto
       role
     );
   };
@@ -250,23 +261,25 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
 
                 {/* garantia */}
                 <div className="flex flex-col gap-4 md:flex-row md:gap-6">
-                  {shouldShowAccountNumberField && (
-                    <div className="flex-1 relative">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Número da Conta
-                      </label>
-                      <input
-                        type="text"
-                        name="accountNumber"
-                        value={formData.accountNumber}
-                        onChange={(e) =>
-                          handleInputChange(e, setFormData, () => { })
-                        }
-                        placeholder="Insira o número da conta"
-                        className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
-                      />
-                    </div>
-                  )}
+                  <div className="flex-1 relative">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Número da Conta
+                    </label>
+                    <input
+                      type="text"
+                      name="accountNumber"
+                      value={formData.accountNumber}
+                      onChange={(e) =>
+                        handleInputChange(e, setFormData, () => { })
+                      }
+                      placeholder="Insira o número da conta"
+                      className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* número da conta + parcela mensal */}
+                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                   <div className="flex-1 relative">
                     <label className="block text-sm font-medium text-gray-700">
                       Garantia
@@ -282,10 +295,6 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
                   </div>
-                </div>
-
-                {/* número da conta + parcela mensal */}
-                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                   {formData.installments > 0 && (
                     <div className="flex-2 relative">
                       <label className="block text-sm font-medium text-gray-700">
@@ -389,10 +398,37 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                     className="hidden"
                   />
                 </div>
+                {/* upload comprovativo de rendimentos */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Comprovativo de rendimentos ou Extrato Bancário
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleFileButtonClick(incomeProofRef)}
+                    className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-600 bg-white hover:bg-blue-50 focus:ring-2 focus:ring-blue-500"
+                  >
+                    {incomeProof ? "Comprovativo Carregado" : "Carregar Comprovativo"}
+                    {incomeProof && (
+                      <IoCheckmarkDoneOutline className="h-6 w-6 inline ml-2 text-green-500" />
+                    )}
+                  </button>
+                  <input
+                    type="file"
+                    ref={incomeProofRef}
+                    accept="application/pdf,image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setIncomeProof(file);
+                    }}
+                    className="hidden"
+                  />
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}
-                  className="rounded-md bg-blue-500 px-10 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:bg-blue-500 disabled:cursor-not-allowed"
+                  className="rounded-md bg-blue-500 px-10 py-4 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:bg-blue-500 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">

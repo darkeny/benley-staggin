@@ -6,7 +6,6 @@ import { SuccessAlert } from "../../components/Modal/successAlert";
 import { FaSpinner } from "react-icons/fa6";
 import { handleError } from "../../handleError";
 import { useNavigate } from 'react-router-dom';
-import { IoCheckmarkDoneOutline } from "react-icons/io5";
 import { Helmet } from 'react-helmet-async';
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
@@ -27,8 +26,6 @@ const SignUp: React.FC = () => {
         grantorName: "",
         grantorID: "",
         grantorContact: "",
-        // imageFiles: [] as File[], // Adicionando imagens ao formData
-        // pdfFiles: [] as File[], // Adicionando PDFs ao formData
     });
 
     const [showGrantorFields, setShowGrantorFields] = useState(false);
@@ -38,24 +35,7 @@ const SignUp: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
     const [alertText, setAlertText] = useState("");
-    const imageInputRef = useRef<HTMLInputElement>(null);
-    const pdfInputRef = useRef<HTMLInputElement>(null);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const filesArray = Array.from(e.target.files);
-            setFormData((prev) => ({ ...prev, imageFiles: filesArray }));
-            console.log("Imagens carregadas:", filesArray);
-        }
-    };
-
-    const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const filesArray = Array.from(e.target.files);
-            setFormData((prev) => ({ ...prev, pdfFiles: filesArray }));
-            console.log("PDFs carregados:", filesArray);
-        }
-    };
 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -162,8 +142,6 @@ const SignUp: React.FC = () => {
                     grantorName: "",
                     grantorID: "",
                     grantorContact: "",
-                    // imageFiles: [],
-                    // pdfFiles: [],
                 });
                 setSelectedBank("");
                 setShowGrantorFields(false);
@@ -192,8 +170,6 @@ const SignUp: React.FC = () => {
                     grantorName: "",
                     grantorID: "",
                     grantorContact: "",
-                    // imageFiles: [],
-                    // pdfFiles: [],
                 });
                 setSelectedBank("");
                 setShowGrantorFields(false);
@@ -325,18 +301,18 @@ const SignUp: React.FC = () => {
                                         <option value="Solteiro/a">Solteiro/a</option>
                                     </select>
                                 </div>
-
                                 <div className="relative">
-                                    <label className="block text-sm font-normal text-gray-950">Endereço</label>
+                                    <label className="block text-sm font-normal text-gray-950">Profissão</label>
                                     <input
                                         type="text"
-                                        name="address"
-                                        value={formData.address}
+                                        name="profession"
+                                        value={formData.profession}
                                         onChange={handleInputChange}
-                                        placeholder="Insira o seu endereço"
+                                        placeholder="Qual a sua profissão?"
                                         className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
+
                                 <div className="flex flex-col gap-6 md:flex-row md:items-start">
                                     <div className="flex-1 relative">
                                         <label className="block text-sm font-normal text-gray-950">Fonte de Renda</label>
@@ -348,9 +324,9 @@ const SignUp: React.FC = () => {
                                         >
                                             <option value="">Selecione</option>
                                             <option value="Freelancer">Freelancer</option>
-                                            <option value="Funcionário Público">Funcionário Público</option>
-                                            <option value="Assalariado (Funcionário Privado)">Assalariado (Funcionário Privado)</option>
-                                            <option value="Conta Própria (Autônomo / Empreendedor)">Conta Própria (Autônomo / Empreendedor)</option>
+                                            <option value="F.Público">Funcionário Público</option>
+                                            <option value="Assalariado">Assalariado (Funcionário Privado)</option>
+                                            <option value="Conta Própria">Conta Própria (Autônomo / Empreendedor)</option>
                                         </select>
                                     </div>
                                     <div className="relative">
@@ -366,78 +342,17 @@ const SignUp: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="relative">
-                                    <label className="block text-sm font-normal text-gray-950">Profissão</label>
-                                    <input
-                                        type="text"
-                                        name="profession"
-                                        value={formData.profession}
-                                        onChange={handleInputChange}
-                                        placeholder="Qual a sua profissão?"
-                                        className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-
-
-                                {/* Upload de Imagem */}
-                                <div className="relative group">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Foto do Bilhete de Identidade
-                                    </label>
-                                    <button
-                                        type="button"
-                                        disabled
-                                        onClick={() => imageInputRef.current?.click()}
-                                        className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-400 bg-gray-100 cursor-not-allowed relative"
-                                    >
-                                        Carregar Imagem
-                                        {/* Tooltip */}
-                                        <div className="absolute left-1/2 -top-12 -translate-x-1/2 hidden group-hover:block bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-3 py-2 z-10 w-72 shadow-md">
-                                            Campo em manutenção. Pode continuar com os demais campos e submeter.
-                                            Depois, envie-nos a imagem por email ou WhatsApp.
-                                        </div>
-                                    </button>
-                                    <input
-                                        type="file"
-                                        ref={imageInputRef}
-                                        accept="image/*"
-                                        multiple
-                                        onChange={handleImageChange}
-                                        className="hidden"
-                                        disabled
-                                    />
-                                </div>
-
-                                {/* Upload de PDF */}
-                                <div className="relative group">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Comprovativo de rendimentos ou Extrato Bancário (PDF)
-                                    </label>
-                                    <button
-                                        type="button"
-                                        disabled
-                                        onClick={() => pdfInputRef.current?.click()}
-                                        className="mt-2 block w-full p-3 rounded-lg border border-slate-400 text-slate-400 bg-gray-100 cursor-not-allowed relative"
-                                    >
-                                        Carregar PDF
-                                        {/* Tooltip */}
-                                        <div className="absolute left-1/2 -top-12 -translate-x-1/2 hidden group-hover:block bg-yellow-100 border border-yellow-400 text-yellow-800 text-xs rounded px-3 py-2 z-10 w-72 shadow-md">
-                                            Campo em manutenção. Pode continuar com os demais campos e submeter.
-                                            Depois, envie-nos o PDF por email ou WhatsApp.
-                                        </div>
-                                    </button>
-                                    <input
-                                        type="file"
-                                        ref={pdfInputRef}
-                                        accept="application/pdf"
-                                        multiple
-                                        onChange={handlePdfChange}
-                                        className="hidden"
-                                        disabled
-                                    />
-                                </div>
-
-
+                            </div>
+                            <div className="relative">
+                                <label className="block text-sm font-normal text-gray-950">Endereço</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleInputChange}
+                                    placeholder="Insira o seu endereço"
+                                    className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                                />
                             </div>
                         </div>
                         <div>
