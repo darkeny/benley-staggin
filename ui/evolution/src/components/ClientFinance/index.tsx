@@ -4,14 +4,15 @@ import { GiReceiveMoney, GiTakeMyMoney } from "react-icons/gi";
 import { PiPiggyBankFill } from "react-icons/pi";
 import { FaUserAlt } from "react-icons/fa";
 import { PieChart } from '../Chart/PieGraph';
-import { calculateDaysLeft, CalculationOfFines, useFetchUserData } from '../../utils';
+import { calculateDaysLeft, useFetchUserData } from '../../utils';
 import { fetchUserLoans } from '../../utils/loans/fetchUserLoans';
-import { Loan } from '../../@types/customer';
+import { Installment, Loan } from '../../@types/customer';
+import { calculateTotalFines } from '../../utils/loans/installmentsFines';
 
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const ClientFinance: React.FC = () => {
-    const { user, loan, loading, error } = useFetchUserData();
+    const { user, loading, error } = useFetchUserData();
     const [loans, setLoans] = useState<Loan[]>([]);
     const navigate = useNavigate();
 
@@ -30,23 +31,32 @@ const ClientFinance: React.FC = () => {
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
 
+    // 🔹 Pega empréstimo ativo ou o primeiro da lista
     const relevantLoan: Loan | undefined = loans.find(l => l.status === "ACTIVE") || loans[0];
 
-    const loanActivatedAt = relevantLoan ? new Date(relevantLoan.activatedAt) : null;
+    // 🔹 Se não existir empréstimo, variáveis ficam seguras
+    const loanActivatedAt = relevantLoan?.activatedAt ? new Date(relevantLoan.activatedAt) : null;
     const loanDuration = relevantLoan?.paymentTerm || 1;
     const balanceDue = relevantLoan?.balanceDue || 0;
 
-    const { daysDelayed, fineAmount } = loanActivatedAt
-        ? CalculationOfFines(loanActivatedAt, loanDuration, balanceDue)
-        : { daysDelayed: 0, fineAmount: 0 };
+    // --- MULTAS E PARCELAS ---
+    const installments: Installment[] = (relevantLoan?.installmentsList || []).map((inst: Installment) => ({
+        ...inst,
+        dueDate: new Date(inst.dueDate),
+        paid: inst.paid ?? false,
+    }));
 
+    const { totalFine, totalDaysDelayed } = calculateTotalFines(installments);
 
-    const daysLeft = relevantLoan
-        ? calculateDaysLeft(relevantLoan.activatedAt, relevantLoan.paymentTerm)
+    // Total a pagar = saldo + multas
+    const totalToPay = balanceDue + totalFine;
+
+    // --- TEMPO RESTANTE ---
+    const daysLeft = loanActivatedAt
+        ? calculateDaysLeft(loanActivatedAt, loanDuration)
         : 0;
 
-    const TotalMultas = fineAmount;
-
+    // Exemplo de poupança
     const savings = {
         amount: 50000,
         status: 'PENDING'
@@ -71,7 +81,7 @@ const ClientFinance: React.FC = () => {
                 <div className="lg:w-2/3 pt-3 pb-5 w-full bg-white px-3 md:p-6 rounded-lg shadow-md">
                     <h3 className="md:text-xl text-lg font-semibold mb-4 text-gray-700">Status Financeiro</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* Solicitação */}
+                        {/* Saldo Solicitado */}
                         <div className="p-6 border rounded-xl shadow-md hover:shadow-lg transition-all duration-300 bg-blue-50 border-blue-800 text-blue-700">
                             <div className="flex items-center">
                                 <GiReceiveMoney className="text-blue-600 mb-4" size={40} />
@@ -86,17 +96,17 @@ const ClientFinance: React.FC = () => {
 
                         {/* Empréstimo */}
                         <div className={`p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ${relevantLoan?.status === "ACTIVE"
-                                ? 'bg-green-50 border-green-300 text-green-700'
-                                : relevantLoan?.status === "REFUSED"
-                                    ? 'bg-red-50 border-red-400 text-red-700'
-                                    : 'bg-gray-50 border-gray-300 text-gray-700'
+                            ? 'bg-green-50 border-green-300 text-green-700'
+                            : relevantLoan?.status === "REFUSED"
+                                ? 'bg-red-50 border-red-400 text-red-700'
+                                : 'bg-gray-50 border-gray-300 text-gray-700'
                             } border`}>
                             <div className="flex items-center mb-4">
                                 <GiTakeMyMoney className={`${relevantLoan?.status === "ACTIVE"
-                                        ? 'text-green-600'
-                                        : relevantLoan?.status === "REFUSED"
-                                            ? 'text-red-600'
-                                            : 'text-gray-500'
+                                    ? 'text-green-600'
+                                    : relevantLoan?.status === "REFUSED"
+                                        ? 'text-red-600'
+                                        : 'text-gray-500'
                                     }`} size={40} />
                                 <div className="ml-4">
                                     <h4 className="text-lg font-bold text-gray-700">Empréstimo</h4>
@@ -106,16 +116,16 @@ const ClientFinance: React.FC = () => {
                                 </div>
                             </div>
                             <h2 className="text-3xl font-bold">
-                                {relevantLoan?.status === "ACTIVE" && relevantLoan.balanceDue > 0
-                                    ? `${relevantLoan.balanceDue} MT`
+                                {relevantLoan?.status === "ACTIVE" && balanceDue > 0
+                                    ? `${balanceDue} MT`
                                     : 'Sem saldo'}
                             </h2>
                         </div>
 
                         {/* Poupança */}
                         <div className={`p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ${savings.status === "ACTIVE"
-                                ? 'bg-orange-50 border-yellow-700 text-yellow-700'
-                                : 'bg-gray-50 border-gray-300 text-gray-700'
+                            ? 'bg-orange-50 border-yellow-700 text-yellow-700'
+                            : 'bg-gray-50 border-gray-300 text-gray-700'
                             } border`}>
                             <div className="flex items-center mb-4">
                                 <PiPiggyBankFill className={`${savings.status === "ACTIVE" ? 'text-yellow-600' : 'text-gray-500'
@@ -166,11 +176,11 @@ const ClientFinance: React.FC = () => {
                         </div>
 
                         {/* Multas */}
-                        <div className={`p-6 ${daysDelayed > 0 ? 'bg-red-50 border-red-700 text-red-700' : 'bg-white border border-gray-200'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}>
+                        <div className={`p-6 ${totalDaysDelayed > 0 ? 'bg-red-50 border-red-700 text-red-700' : 'bg-white border border-gray-200'} rounded-xl shadow-md hover:shadow-lg transition-all duration-300`}>
                             <h4 className="text-lg font-bold text-gray-700">Total de Multas</h4>
                             <p className="text-gray-500">
-                                {daysDelayed > 0
-                                    ? `${daysDelayed} dia(s) - ${TotalMultas.toFixed(2)} MT`
+                                {totalDaysDelayed > 0
+                                    ? `${totalDaysDelayed} dia(s) - ${totalFine.toFixed(2)} MT`
                                     : "Sem multas"}
                             </p>
                         </div>

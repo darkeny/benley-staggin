@@ -5,6 +5,7 @@ import { SuccessAlert } from "../../components/Modal/successAlert";
 import { IoCheckmarkDoneOutline } from "react-icons/io5";
 import { useFetchUserData } from "../../utils";
 import { useNavigate } from "react-router-dom";
+import { calculateTotalWithInstallments } from "../../utils/loans/calculateTotalWithInstallments"
 import {
   handleInputChange,
   handleFileChange,
@@ -31,7 +32,7 @@ const Loan: React.FC = () => {
     customerId: "",
   });
 
-  // Corrigindo customerId dinamicamente após carregamento do usuário
+  // Atualiza o customerId assim que o usuário carregar
   useEffect(() => {
     if (userId) {
       setFormData((prev) => ({
@@ -49,18 +50,37 @@ const Loan: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const loanAmountValue = parseFloat(formData.loanAmount);
+
+  // Cálculo dos encargos (juros) usando a função do utils
+  const encargos =
+    formData.installments > 0
+      ? calculateTotalWithInstallments(loanAmountValue, formData.installments)
+      : loanAmountValue > 0
+        ? loanAmountValue * 1.3 // padrão: 1 mês se não escolher parcelas
+        : 0;
+
+  // Atualiza automaticamente o paymentTerm no formData
   useEffect(() => {
-    const loanAmountValue = parseFloat(formData.loanAmount);
-    if (!isNaN(loanAmountValue)) {
+    if (formData.installments > 0 || loanAmountValue > 0) {
+      const prazo =
+        formData.installments === 2
+          ? 60
+          : formData.installments === 3
+            ? 90
+            : loanAmountValue > 0
+              ? 30
+              : 0;
+
       setFormData((prev) => ({
         ...prev,
-        paymentTerm: loanAmountValue >= 1000 ? 30 : 0,
+        paymentTerm: prazo,
       }));
     }
-  }, [formData.loanAmount]);
-
-  const loanAmountValue = parseFloat(formData.loanAmount);
-  const shouldShowInstallmentsField = loanAmountValue >= 10000 && !formData.isPartialPayment;
+  }, [formData.installments, loanAmountValue]);
+  
+  const shouldShowInstallmentsField =
+    loanAmountValue >= 10000 && !formData.isPartialPayment;
   const shouldShowCheckbox = loanAmountValue >= 10000;
   const shouldShowAccountNumberField = formData.paymentMethod !== "";
 
@@ -104,7 +124,9 @@ const Loan: React.FC = () => {
                     type="number"
                     name="loanAmount"
                     value={formData.loanAmount}
-                    onChange={(e) => handleInputChange(e, setFormData, setError)}
+                    onChange={(e) =>
+                      handleInputChange(e, setFormData, setError)
+                    }
                     placeholder="Insira o valor do empréstimo"
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                   />
@@ -119,11 +141,7 @@ const Loan: React.FC = () => {
                     <input
                       type="number"
                       name="amount"
-                      value={
-                        loanAmountValue < 5000
-                          ? loanAmountValue * 1.5
-                          : loanAmountValue * 1.3
-                      }
+                      value={isNaN(encargos) ? 0 : encargos}
                       readOnly
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
@@ -172,7 +190,9 @@ const Loan: React.FC = () => {
                       type="text"
                       name="accountNumber"
                       value={formData.accountNumber}
-                      onChange={(e) => handleInputChange(e, setFormData, setError)}
+                      onChange={(e) =>
+                        handleInputChange(e, setFormData, setError)
+                      }
                       placeholder="Insira o número da conta"
                       className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                     />
@@ -187,7 +207,9 @@ const Loan: React.FC = () => {
                     type="text"
                     name="collateral"
                     value={formData.collateral}
-                    onChange={(e) => handleInputChange(e, setFormData, setError)}
+                    onChange={(e) =>
+                      handleInputChange(e, setFormData, setError)
+                    }
                     placeholder="Insira a garantia"
                     className="mt-2 block w-full p-3 rounded-lg border border-gray-300 shadow-sm"
                   />
@@ -200,11 +222,16 @@ const Loan: React.FC = () => {
                         type="checkbox"
                         name="isPartialPayment"
                         checked={formData.isPartialPayment}
-                        onChange={(e) => handleInputChange(e, setFormData, setError)}
+                        onChange={(e) =>
+                          handleInputChange(e, setFormData, setError)
+                        }
                         className="h-5 w-5 text-blue-600 border-gray-300 rounded"
                         id="isPartialPayment"
                       />
-                      <label htmlFor="isPartialPayment" className="text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="isPartialPayment"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Efectuar Pagamento Integral
                       </label>
                     </div>
@@ -232,7 +259,10 @@ const Loan: React.FC = () => {
                               }
                               className="h-5 w-5 text-blue-600 border-gray-300 rounded"
                             />
-                            <label htmlFor={`installment-${n}`} className="text-sm font-medium text-gray-700">
+                            <label
+                              htmlFor={`installment-${n}`}
+                              className="text-sm font-medium text-gray-700"
+                            >
                               {n} parcelas
                             </label>
                           </div>
@@ -270,9 +300,10 @@ const Loan: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3 px-4 text-white font-bold rounded-lg shadow-lg transition-all ${
-                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                  }`}
+                  className={`w-full py-3 px-4 text-white font-bold rounded-lg shadow-lg transition-all ${loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                    }`}
                 >
                   {loading ? "Enviando..." : "Enviar Solicitação"}
                 </button>
@@ -283,14 +314,22 @@ const Loan: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <Alert isOpen={isModalOpen} text={alertText} onClose={() => handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)} />
+        <Alert
+          isOpen={isModalOpen}
+          text={alertText}
+          onClose={() =>
+            handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)
+          }
+        />
       )}
 
       {isModalSuccessOpen && (
         <SuccessAlert
           isOpen={isModalSuccessOpen}
           text={alertText}
-          onClose={() => handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)}
+          onClose={() =>
+            handleCloseModal(setIsModalOpen, setIsModalSuccessOpen)
+          }
         />
       )}
     </>

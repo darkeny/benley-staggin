@@ -1,22 +1,16 @@
-export interface Customer {
+export interface Installment {
   id: string;
-  fullName: string;
-  dateOfBirth: Date;
-  email: string;
-  contact: string;
-  gender: string;
-  address: string;
-  incomeSource: string;
-  monthlyIncome: number;
-  identityNumber: string;
-  role: string;
-  createdAt: Date;
-  updatedAt: Date;
+  loanId: string;
+  installmentNumber: number;
+  dueDate: Date;
+  amount: number;
+  fine?: number; // multa da parcela
+  paid: boolean;
 }
-
 export type LoanStatus = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'PAID';
 
 export interface Loan {
+  [x: string]: any;
   id: string;
   loanAmount: number;
   balanceDue: number;
@@ -25,8 +19,8 @@ export interface Loan {
   accountNumber: string;
   collateral: string;
   pawn: string;
-  installments: number;
-  status: LoanStatus; // <- agora é um status legível
+  installments: Installment[]; // agora é um array de parcelas
+  status: LoanStatus; 
   activatedAt: Date;
   customerId: string;
   customer: {
