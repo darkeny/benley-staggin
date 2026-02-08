@@ -14,7 +14,7 @@ const handleError = (error: any) => {
             return ERROR_MESSAGES.duplicateIdentityNumber;
         }
         if (errorMessage === ERROR_MESSAGES.invalidCredentials) {
-            
+
             return ERROR_MESSAGES.invalidCredentials;
         }
         if (errorMessage === ERROR_MESSAGES.requiredCustomer) {
@@ -27,7 +27,7 @@ const handleError = (error: any) => {
             return ERROR_MESSAGES.ThrowActiveLoan;
         }
     }
-    return 'Algo deu errado.';
+    return 'Algo deu errado. Verifique sua internet.';
 
 };
 

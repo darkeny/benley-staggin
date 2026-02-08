@@ -148,7 +148,7 @@ export const handleSubmit = async (
     });
 
     if (response.status === 200 || response.status === 201) {
-      setAlertText("Empréstimo criado com sucesso");
+      setAlertText("Solicitação enviada! A sua senha foi enviada por email.");
       setIsModalSuccessOpen(true);
 
       setTimeout(() => {
