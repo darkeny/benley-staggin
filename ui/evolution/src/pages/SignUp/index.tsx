@@ -89,6 +89,13 @@ const SignUp: React.FC = () => {
             }
         }
 
+        if (Number(formData.monthlyIncome) < 1000) {
+            setAlertText("A renda mensal deve ter no mínimo 4 dígitos.");
+            setIsModalOpen(true);
+            setLoading(false);
+            return;
+        }
+
 
         // Validação dos campos do outorgante se for mostrado
         if (showGrantorFields) {
