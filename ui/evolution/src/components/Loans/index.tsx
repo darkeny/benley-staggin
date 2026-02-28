@@ -526,173 +526,175 @@ const Loans: React.FC = () => {
     return (
         <>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Mini Dashboard - Insights */}
-                <div className="px-4 sm:px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                        <div className="flex items-center gap-2">
-                            <FiTrendingUp className="w-5 h-5 text-indigo-600" />
-                            <h3 className="text-base font-semibold text-gray-900">Insights Financeiros</h3>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
+                {/* Mini Dashboard - Insights - APENAS PARA ADMINISTRADORES */}
+                {user?.role === 'ADMIN' && (
+                    <div className="px-4 sm:px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                             <div className="flex items-center gap-2">
-                                <FiCalendar className="w-4 h-4 text-gray-500" />
-                                <select
-                                    value={selectedPeriod}
-                                    onChange={handlePeriodChange}
-                                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-                                >
-                                    <option value="current">Mês Atual</option>
-                                    <option value="previous">Mês Anterior</option>
-                                    <option value="custom">Personalizado</option>
-                                </select>
+                                <FiTrendingUp className="w-5 h-5 text-indigo-600" />
+                                <h3 className="text-base font-semibold text-gray-900">Insights Financeiros</h3>
                             </div>
                             
-                            {selectedPeriod === 'custom' && (
-                                <input
-                                    type="month"
-                                    value={customMonth}
-                                    onChange={handleCustomMonthChange}
-                                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                />
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* Card - Valor Investido */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
-                                        <FiDollarSign className="w-4 h-4 text-green-600" />
-                                        Valor Investido
-                                    </p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(insights.investedAmount)}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Empréstimos ativos em {insights.monthYear}
-                                    </p>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                    <FiCalendar className="w-4 h-4 text-gray-500" />
+                                    <select
+                                        value={selectedPeriod}
+                                        onChange={handlePeriodChange}
+                                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                    >
+                                        <option value="current">Mês Atual</option>
+                                        <option value="previous">Mês Anterior</option>
+                                        <option value="custom">Personalizado</option>
+                                    </select>
                                 </div>
-                                <div className="bg-green-100 rounded-full p-2">
-                                    <FiTrendingUp className="w-5 h-5 text-green-600" />
-                                </div>
+                                
+                                {selectedPeriod === 'custom' && (
+                                    <input
+                                        type="month"
+                                        value={customMonth}
+                                        onChange={handleCustomMonthChange}
+                                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    />
+                                )}
                             </div>
                         </div>
 
-                        {/* Card - Valor Esperado (com e sem multa) */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
-                                        <FiCalendar className="w-4 h-4 text-blue-600" />
-                                        Valor Esperado
-                                    </p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(insights.expectedAmountWithFines)}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-xs text-gray-500">
-                                            Sem multa: {formatCurrency(insights.expectedAmount)}
-                                        </span>
-                                        {insights.expectedAmountWithFines > insights.expectedAmount && (
-                                            <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
-                                                +{formatCurrency(insights.expectedAmountWithFines - insights.expectedAmount)} multas
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Card - Valor Investido */}
+                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                            <FiDollarSign className="w-4 h-4 text-green-600" />
+                                            Valor Investido
+                                        </p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {formatCurrency(insights.investedAmount)}
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Empréstimos ativos em {insights.monthYear}
+                                        </p>
+                                    </div>
+                                    <div className="bg-green-100 rounded-full p-2">
+                                        <FiTrendingUp className="w-5 h-5 text-green-600" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Card - Valor Esperado (com e sem multa) */}
+                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                            <FiCalendar className="w-4 h-4 text-blue-600" />
+                                            Valor Esperado
+                                        </p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {formatCurrency(insights.expectedAmountWithFines)}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-xs text-gray-500">
+                                                Sem multa: {formatCurrency(insights.expectedAmount)}
                                             </span>
-                                        )}
+                                            {insights.expectedAmountWithFines > insights.expectedAmount && (
+                                                <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
+                                                    +{formatCurrency(insights.expectedAmountWithFines - insights.expectedAmount)} multas
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            A receber em {insights.monthYear}
+                                        </p>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        A receber em {insights.monthYear}
-                                    </p>
-                                </div>
-                                <div className="bg-blue-100 rounded-full p-2">
-                                    <FiDollarSign className="w-5 h-5 text-blue-600" />
+                                    <div className="bg-blue-100 rounded-full p-2">
+                                        <FiDollarSign className="w-5 h-5 text-blue-600" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Card - Valor Pago (com e sem multa) */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
-                                        <FiCheckCircle className="w-4 h-4 text-emerald-600" />
-                                        Valor Pago
-                                    </p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(insights.paidAmountWithFines)}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-xs text-gray-500">
-                                            Sem multa: {formatCurrency(insights.paidAmount)}
-                                        </span>
-                                        {insights.paidAmountWithFines > insights.paidAmount && (
-                                            <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
-                                                +{formatCurrency(insights.paidAmountWithFines - insights.paidAmount)} multas
+                            {/* Card - Valor Pago (com e sem multa) */}
+                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                            <FiCheckCircle className="w-4 h-4 text-emerald-600" />
+                                            Valor Pago
+                                        </p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {formatCurrency(insights.paidAmountWithFines)}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-xs text-gray-500">
+                                                Sem multa: {formatCurrency(insights.paidAmount)}
                                             </span>
-                                        )}
+                                            {insights.paidAmountWithFines > insights.paidAmount && (
+                                                <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
+                                                    +{formatCurrency(insights.paidAmountWithFines - insights.paidAmount)} multas
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Recebido em {insights.monthYear}
+                                        </p>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Recebido em {insights.monthYear}
-                                    </p>
+                                    <div className="bg-emerald-100 rounded-full p-2">
+                                        <FiCheckCircle className="w-5 h-5 text-emerald-600" />
+                                    </div>
                                 </div>
-                                <div className="bg-emerald-100 rounded-full p-2">
-                                    <FiCheckCircle className="w-5 h-5 text-emerald-600" />
+                            </div>
+
+                            {/* Card - Resumo Total */}
+                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                            <FiAlertCircle className="w-4 h-4 text-purple-600" />
+                                            Resumo Total
+                                        </p>
+                                        <p className="text-lg font-semibold text-gray-900">
+                                            Contratos: {formatCurrency(insights.totalContractValue)}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-xs text-gray-500">
+                                                Multas totais:
+                                            </span>
+                                            <span className="text-xs font-medium text-orange-600">
+                                                {formatCurrency(insights.totalFinesValue)}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Total a receber no fim dos contratos
+                                        </p>
+                                    </div>
+                                    <div className="bg-purple-100 rounded-full p-2">
+                                        <FiTrendingUp className="w-5 h-5 text-purple-600" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Card - Resumo Total */}
-                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
-                                        <FiAlertCircle className="w-4 h-4 text-purple-600" />
-                                        Resumo Total
-                                    </p>
-                                    <p className="text-lg font-semibold text-gray-900">
-                                        Contratos: {formatCurrency(insights.totalContractValue)}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-xs text-gray-500">
-                                            Multas totais:
-                                        </span>
-                                        <span className="text-xs font-medium text-orange-600">
-                                            {formatCurrency(insights.totalFinesValue)}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Total a receber no fim dos contratos
-                                    </p>
-                                </div>
-                                <div className="bg-purple-100 rounded-full p-2">
-                                    <FiTrendingUp className="w-5 h-5 text-purple-600" />
-                                </div>
+                        {/* Indicador de performance */}
+                        <div className="mt-4 flex items-center justify-end gap-4 text-xs">
+                            <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="text-gray-600">Investido</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span className="text-gray-600">Esperado</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                <span className="text-gray-600">Pago</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                <span className="text-gray-600">Multas</span>
                             </div>
                         </div>
                     </div>
-
-                    {/* Indicador de performance */}
-                    <div className="mt-4 flex items-center justify-end gap-4 text-xs">
-                        <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-gray-600">Investido</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span className="text-gray-600">Esperado</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                            <span className="text-gray-600">Pago</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            <span className="text-gray-600">Multas</span>
-                        </div>
-                    </div>
-                </div>
+                )}
 
                 {/* Header */}
                 <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
@@ -803,11 +805,13 @@ const Loans: React.FC = () => {
                                         <th
                                             key={column.id}
                                             scope="col"
-                                            className={`px-3 sm:px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${{
-                                                'left': 'text-left',
-                                                'center': 'text-center',
-                                                'right': 'text-right'
-                                            }[column.align || 'left']}`}
+                                            className={`px-3 sm:px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                                                {
+                                                    left: 'text-left',
+                                                    center: 'text-center',
+                                                    right: 'text-right'
+                                                }[column.align || 'left']
+                                            }`}
                                             style={{ width: column.width }}
                                         >
                                             {column.label}
@@ -840,11 +844,13 @@ const Loans: React.FC = () => {
                                                 {visibleColumns.map((column) => (
                                                     <td
                                                         key={`${loan.id}-${column.id}`}
-                                                        className={`px-3 sm:px-4 py-3 text-sm ${{
-                                                            'left': 'text-left',
-                                                            'center': 'text-center',
-                                                            'right': 'text-right'
-                                                        }[column.align || 'left']}`}
+                                                        className={`px-3 sm:px-4 py-3 text-sm ${
+                                                            {
+                                                                left: 'text-left',
+                                                                center: 'text-center',
+                                                                right: 'text-right'
+                                                            }[column.align || 'left']
+                                                        }`}
                                                     >
                                                         <div className={column.wrap ? 'whitespace-normal' : 'whitespace-nowrap'}>
                                                             {renderCellContent(loan, column)}
@@ -984,26 +990,32 @@ const Loans: React.FC = () => {
                                                                                                         setIsModalOpen,
                                                                                                     })
                                                                                                 }
-                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full hover:opacity-70 ${inst.paid
+                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full hover:opacity-70 ${
+                                                                                                    inst.paid
                                                                                                         ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                                                                                         : 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                                                                    }`}
+                                                                                                }`}
                                                                                                 title={inst.paid ? 'Marcar como não pago' : 'Marcar como pago'}
                                                                                             >
-                                                                                                {inst.paid ?
-                                                                                                    <FiCheckCircle className="w-4 h-4" /> :
+                                                                                                {inst.paid ? (
+                                                                                                    <FiCheckCircle className="w-4 h-4" />
+                                                                                                ) : (
                                                                                                     <FiXCircle className="w-4 h-4" />
-                                                                                                }
+                                                                                                )}
                                                                                             </button>
                                                                                         ) : (
-                                                                                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${inst.paid
-                                                                                                    ? 'bg-green-100 text-green-600'
-                                                                                                    : 'bg-red-100 text-red-600'
-                                                                                                }`}>
-                                                                                                {inst.paid ?
-                                                                                                    <FiCheckCircle className="w-4 h-4" /> :
+                                                                                            <span
+                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${
+                                                                                                    inst.paid
+                                                                                                        ? 'bg-green-100 text-green-600'
+                                                                                                        : 'bg-red-100 text-red-600'
+                                                                                                }`}
+                                                                                            >
+                                                                                                {inst.paid ? (
+                                                                                                    <FiCheckCircle className="w-4 h-4" />
+                                                                                                ) : (
                                                                                                     <FiXCircle className="w-4 h-4" />
-                                                                                                }
+                                                                                                )}
                                                                                             </span>
                                                                                         )}
                                                                                     </td>
@@ -1036,7 +1048,9 @@ const Loans: React.FC = () => {
                                 </p>
                                 {visibleColumns.length < columns.length && (
                                     <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-                                        {columns.length - visibleColumns.length} coluna{columns.length - visibleColumns.length !== 1 ? 's' : ''} oculta{columns.length - visibleColumns.length !== 1 ? 's' : ''}
+                                        {columns.length - visibleColumns.length} coluna
+                                        {columns.length - visibleColumns.length !== 1 ? 's' : ''} oculta
+                                        {columns.length - visibleColumns.length !== 1 ? 's' : ''}
                                     </span>
                                 )}
                             </div>
