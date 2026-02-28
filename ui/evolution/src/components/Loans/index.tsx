@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { FiCheckCircle, FiClock, FiDownload, FiLoader, FiXCircle, FiEye } from "react-icons/fi";
+import { FiCheckCircle, FiClock, FiDownload, FiLoader, FiXCircle, FiEye, FiTrendingUp, FiDollarSign, FiCalendar } from "react-icons/fi";
 import { TbPointFilled } from "react-icons/tb";
 import { FcSurvey } from "react-icons/fc";
 import { Alert } from '../Modal/alert';
@@ -28,6 +28,13 @@ interface ColumnConfig {
     wrap?: boolean;
 }
 
+interface InsightData {
+    investedAmount: number;
+    expectedAmount: number;
+    totalContractValue: number;
+    monthYear: string;
+}
+
 const Loans: React.FC = () => {
     const navigate = useNavigate();
     const [loans, setLoans] = useState<Loan[]>([]);
@@ -42,6 +49,19 @@ const Loans: React.FC = () => {
     const [showColumnConfig, setShowColumnConfig] = useState(false);
     const { user } = useFetchUserData();
     const apiUrl = import.meta.env.VITE_APP_API_URL;
+
+    // Estados para o mini dashboard
+    const [selectedPeriod, setSelectedPeriod] = useState<string>('current');
+    const [customMonth, setCustomMonth] = useState<string>(() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    });
+    const [insights, setInsights] = useState<InsightData>({
+        investedAmount: 0,
+        expectedAmount: 0,
+        totalContractValue: 0,
+        monthYear: ''
+    });
 
     // Configuração inicial das colunas
     const initialColumns: ColumnConfig[] = [
@@ -132,6 +152,66 @@ const Loans: React.FC = () => {
         return saved ? JSON.parse(saved) : initialColumns;
     });
 
+    // Função para calcular os insights baseado no período selecionado
+    const calculateInsights = (loansData: Loan[], period: string, customDate: string) => {
+        let investedAmount = 0;
+        let expectedAmount = 0;
+        let totalContractValue = 0;
+        let monthYear = '';
+
+        const now = new Date();
+        let targetMonth = now.getMonth();
+        let targetYear = now.getFullYear();
+
+        if (period === 'previous') {
+            targetMonth = now.getMonth() - 1;
+            targetYear = now.getFullYear();
+            if (targetMonth < 0) {
+                targetMonth = 11;
+                targetYear -= 1;
+            }
+        } else if (period === 'custom' && customDate) {
+            const [year, month] = customDate.split('-').map(Number);
+            targetYear = year;
+            targetMonth = month - 1; // Mês em JS é 0-based
+        }
+
+        monthYear = new Date(targetYear, targetMonth).toLocaleDateString('pt-BR', { 
+            month: 'long', 
+            year: 'numeric' 
+        });
+
+        loansData.forEach(loan => {
+            // Valor investido: apenas empréstimos ACTIVOS no período selecionado
+            if (loan.status === 'ACTIVE') {
+                const loanDate = new Date(loan.createdAt);
+                if (loanDate.getMonth() === targetMonth && loanDate.getFullYear() === targetYear) {
+                    investedAmount += loan.loanAmount;
+                }
+
+                // Valor total dos contratos ativos (soma de todos os empréstimos ativos)
+                totalContractValue += loan.balanceDue;
+            }
+
+            // Valor esperado: parcelas não pagas com vencimento no período (apenas de empréstimos ativos)
+            if (loan.status === 'ACTIVE' && loan.installmentsList && loan.installmentsList.length > 0) {
+                loan.installmentsList.forEach((installment: Installment) => {
+                    const dueDate = new Date(installment.dueDate);
+                    if (dueDate.getMonth() === targetMonth && dueDate.getFullYear() === targetYear && !installment.paid) {
+                        expectedAmount += installment.amount;
+                    }
+                });
+            }
+        });
+
+        setInsights({
+            investedAmount,
+            expectedAmount,
+            totalContractValue,
+            monthYear: monthYear.charAt(0).toUpperCase() + monthYear.slice(1)
+        });
+    };
+
     useEffect(() => {
         if (user?.role && user?.userId) {
             fetchLoans(apiUrl, user, (data: Loan[]) => {
@@ -140,9 +220,15 @@ const Loans: React.FC = () => {
                     installments: Array.isArray(loan.installments) ? loan.installments : [],
                 }));
                 setLoans(normalized);
+                calculateInsights(normalized, selectedPeriod, customMonth);
             });
         }
     }, [user]);
+
+    // Recalcular insights quando o período mudar
+    useEffect(() => {
+        calculateInsights(loans, selectedPeriod, customMonth);
+    }, [selectedPeriod, customMonth, loans]);
 
     useEffect(() => {
         localStorage.setItem('loanColumns', JSON.stringify(columns));
@@ -154,6 +240,17 @@ const Loans: React.FC = () => {
 
     const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setStatusFilter(e.target.value);
+    };
+
+    const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedPeriod(e.target.value);
+    };
+
+    const handleCustomMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCustomMonth(e.target.value);
+        if (selectedPeriod === 'custom') {
+            calculateInsights(loans, 'custom', e.target.value);
+        }
     };
 
     const filteredLoans = loans.filter(loan => {
@@ -316,11 +413,110 @@ const Loans: React.FC = () => {
     return (
         <>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                {/* Mini Dashboard - Insights */}
+                <div className="px-4 sm:px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                        <div className="flex items-center gap-2">
+                            <FiTrendingUp className="w-5 h-5 text-indigo-600" />
+                            <h3 className="text-base font-semibold text-gray-900">Insights Financeiros</h3>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                <FiCalendar className="w-4 h-4 text-gray-500" />
+                                <select
+                                    value={selectedPeriod}
+                                    onChange={handlePeriodChange}
+                                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                >
+                                    <option value="current">Mês Atual</option>
+                                    <option value="previous">Mês Anterior</option>
+                                    <option value="custom">Personalizado</option>
+                                </select>
+                            </div>
+                            
+                            {selectedPeriod === 'custom' && (
+                                <input
+                                    type="month"
+                                    value={customMonth}
+                                    onChange={handleCustomMonthChange}
+                                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {/* Card - Valor Investido */}
+                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                        <FiDollarSign className="w-4 h-4 text-green-600" />
+                                        Valor Investido
+                                    </p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {formatCurrency(insights.investedAmount)}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Empréstimos ativos em {insights.monthYear}
+                                    </p>
+                                </div>
+                                <div className="bg-green-100 rounded-full p-2">
+                                    <FiTrendingUp className="w-5 h-5 text-green-600" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Card - Valor Esperado no Mês */}
+                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                        <FiCalendar className="w-4 h-4 text-blue-600" />
+                                        Valor Esperado no Mês
+                                    </p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {formatCurrency(insights.expectedAmount)}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        A receber em {insights.monthYear}
+                                    </p>
+                                </div>
+                                <div className="bg-blue-100 rounded-full p-2">
+                                    <FiDollarSign className="w-5 h-5 text-blue-600" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Card - Valor Total dos Contratos Ativos */}
+                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                        <FiTrendingUp className="w-4 h-4 text-purple-600" />
+                                        Total Contratos Ativos
+                                    </p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {formatCurrency(insights.totalContractValue)}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Valor total a receber no fim dos contratos
+                                    </p>
+                                </div>
+                                <div className="bg-purple-100 rounded-full p-2">
+                                    <FiCalendar className="w-5 h-5 text-purple-600" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Header */}
                 <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Empréstimos</h2>
+                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Lista de Empréstimos</h2>
                             <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                 {filteredLoans.length} empréstimo{filteredLoans.length !== 1 ? 's' : ''} encontrado{filteredLoans.length !== 1 ? 's' : ''}
                             </p>
