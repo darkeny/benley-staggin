@@ -160,6 +160,35 @@ const Loans: React.FC = () => {
         return saved ? JSON.parse(saved) : initialColumns;
     });
 
+    // Função para obter o período alvo baseado na seleção
+    const getTargetPeriod = () => {
+        const now = new Date();
+        let targetMonth = now.getMonth();
+        let targetYear = now.getFullYear();
+
+        if (selectedPeriod === 'previous') {
+            targetMonth = now.getMonth() - 1;
+            targetYear = now.getFullYear();
+            if (targetMonth < 0) {
+                targetMonth = 11;
+                targetYear -= 1;
+            }
+        } else if (selectedPeriod === 'custom' && customMonth) {
+            const [year, month] = customMonth.split('-').map(Number);
+            targetYear = year;
+            targetMonth = month - 1;
+        }
+
+        return { targetMonth, targetYear };
+    };
+
+    // Função para verificar se um empréstimo pertence ao período selecionado
+    const isLoanInSelectedPeriod = (loan: Loan) => {
+        const { targetMonth, targetYear } = getTargetPeriod();
+        const loanDate = new Date(loan.createdAt);
+        return loanDate.getMonth() === targetMonth && loanDate.getFullYear() === targetYear;
+    };
+
     // Função para calcular os insights baseado no período selecionado
     const calculateInsights = (loansData: Loan[], period: string, customDate: string) => {
         let investedAmount = 0;
@@ -366,10 +395,12 @@ const Loans: React.FC = () => {
         setCustomMonth(e.target.value);
     };
 
+    // Filtrar empréstimos por período, nome e status
     const filteredLoans = loans.filter(loan => {
         const matchesName = loan.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === "ALL" || loan.status === statusFilter;
-        return matchesName && matchesStatus;
+        const matchesPeriod = isLoanInSelectedPeriod(loan);
+        return matchesName && matchesStatus && matchesPeriod;
     });
 
     const handleCloseModal = () => {
@@ -700,9 +731,11 @@ const Loans: React.FC = () => {
                 <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Lista de Empréstimos</h2>
+                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                                Lista de Empréstimos - {insights.monthYear}
+                            </h2>
                             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                                {filteredLoans.length} empréstimo{filteredLoans.length !== 1 ? 's' : ''} encontrado{filteredLoans.length !== 1 ? 's' : ''}
+                                {filteredLoans.length} empréstimo{filteredLoans.length !== 1 ? 's' : ''} encontrado{filteredLoans.length !== 1 ? 's' : ''} no período
                             </p>
                         </div>
 
@@ -830,9 +863,11 @@ const Loans: React.FC = () => {
                                                 <svg className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
-                                                <p className="text-sm sm:text-base text-gray-500 font-medium">Nenhum empréstimo encontrado</p>
+                                                <p className="text-sm sm:text-base text-gray-500 font-medium">
+                                                    Nenhum empréstimo encontrado em {insights.monthYear}
+                                                </p>
                                                 <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                                                    {searchTerm ? 'Tente pesquisar com outros termos' : user.role === 'USER' ? 'Solicite seu primeiro empréstimo' : 'Nenhum empréstimo registrado'}
+                                                    {searchTerm ? 'Tente pesquisar com outros termos' : 'Selecione outro período para visualizar empréstimos'}
                                                 </p>
                                             </div>
                                         </td>
@@ -1044,7 +1079,7 @@ const Loans: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <p className="text-xs sm:text-sm text-gray-500">
                                     <span className="font-medium">{filteredLoans.length}</span> de{' '}
-                                    <span className="font-medium">{loans.length}</span> empréstimos
+                                    <span className="font-medium">{loans.length}</span> empréstimos no período
                                 </p>
                                 {visibleColumns.length < columns.length && (
                                     <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
