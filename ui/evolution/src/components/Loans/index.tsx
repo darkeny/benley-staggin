@@ -39,11 +39,14 @@ interface InsightData {
     monthYear: string;
 }
 
+type FilterType = 'ALL' | 'INVESTED' | 'EXPECTED' | 'PAID' | 'TOTAL' | 'FINES';
+
 const Loans: React.FC = () => {
     const navigate = useNavigate();
     const [loans, setLoans] = useState<Loan[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('ALL');
+    const [activeFilter, setActiveFilter] = useState<FilterType>('ALL');
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
@@ -161,7 +164,7 @@ const Loans: React.FC = () => {
     });
 
     // Função para obter o período alvo baseado na seleção
-    const getTargetPeriod = () => {
+    const getTargetPeriod = (): { targetMonth: number; targetYear: number } => {
         const now = new Date();
         let targetMonth = now.getMonth();
         let targetYear = now.getFullYear();
@@ -182,15 +185,8 @@ const Loans: React.FC = () => {
         return { targetMonth, targetYear };
     };
 
-    // Função para verificar se um empréstimo pertence ao período selecionado
-    const isLoanInSelectedPeriod = (loan: Loan) => {
-        const { targetMonth, targetYear } = getTargetPeriod();
-        const loanDate = new Date(loan.createdAt);
-        return loanDate.getMonth() === targetMonth && loanDate.getFullYear() === targetYear;
-    };
-
     // Função para calcular os insights baseado no período selecionado
-    const calculateInsights = (loansData: Loan[], period: string, customDate: string) => {
+    const calculateInsights = (loansData: Loan[], period: string, customDate: string): void => {
         let investedAmount = 0;
         let expectedAmount = 0;
         let expectedAmountWithFines = 0;
@@ -222,9 +218,7 @@ const Loans: React.FC = () => {
             year: 'numeric' 
         });
 
-        console.log('Calculando insights para:', { targetMonth, targetYear, period });
-
-        loansData.forEach(loan => {
+        loansData.forEach((loan: Loan) => {
             // Valor investido: apenas empréstimos ACTIVOS criados no período selecionado
             if (loan.status === 'ACTIVE') {
                 const loanDate = new Date(loan.createdAt);
@@ -246,7 +240,6 @@ const Loans: React.FC = () => {
                     
                     if (loan.installmentsList && loan.installmentsList.length > 0) {
                         loan.installmentsList.forEach((installment: Installment) => {
-                            // Usar o utilitário correto para calcular multa de parcela paga
                             if (installment.paid && installment.paymentDate) {
                                 const { fineAmount } = calcInstallmentFineUtil({
                                     ...installment,
@@ -261,15 +254,6 @@ const Loans: React.FC = () => {
                     paidAmount += loan.balanceDue;
                     paidAmountWithFines += loan.balanceDue + totalFineForLoan;
                     totalFinesValue += totalFineForLoan;
-                    
-                    console.log('Empréstimo pago encontrado:', {
-                        loanId: loan.id,
-                        customer: loan.customer.fullName,
-                        loanAmount: loan.loanAmount,
-                        balanceDue: loan.balanceDue,
-                        totalFine: totalFineForLoan,
-                        paidDate: paidDate.toISOString()
-                    });
                 }
             }
 
@@ -282,7 +266,6 @@ const Loans: React.FC = () => {
                     if (installment.paid && installment.paymentDate) {
                         const paymentDate = new Date(installment.paymentDate);
                         
-                        // Usar o utilitário correto para calcular multa
                         const { fineAmount } = calcInstallmentFineUtil({
                             ...installment,
                             dueDate: new Date(installment.dueDate),
@@ -294,14 +277,6 @@ const Loans: React.FC = () => {
                             paidAmount += installment.amount;
                             paidAmountWithFines += installment.amount + fineAmount;
                             totalFinesValue += fineAmount;
-                            
-                            console.log('Parcela paga de empréstimo ativo:', {
-                                loanId: loan.id,
-                                installmentNumber: installment.installmentNumber,
-                                amount: installment.amount,
-                                fine: fineAmount,
-                                paymentDate: paymentDate.toISOString()
-                            });
                         }
                     }
 
@@ -310,7 +285,6 @@ const Loans: React.FC = () => {
                         if (!installment.paid && loan.status === 'ACTIVE') {
                             expectedAmount += installment.amount;
                             
-                            // Usar o utilitário para calcular multa estimada
                             const { fineAmount } = calcInstallmentFineUtil({
                                 ...installment,
                                 dueDate: new Date(installment.dueDate),
@@ -318,28 +292,10 @@ const Loans: React.FC = () => {
                             });
                             
                             expectedAmountWithFines += installment.amount + fineAmount;
-                            
-                            console.log('Parcela a vencer no período:', {
-                                loanId: loan.id,
-                                installmentNumber: installment.installmentNumber,
-                                amount: installment.amount,
-                                estimatedFine: fineAmount,
-                                dueDate: dueDate.toISOString()
-                            });
                         }
                     }
                 });
             }
-        });
-
-        console.log('Resultados dos insights:', {
-            investedAmount,
-            expectedAmount,
-            expectedAmountWithFines,
-            paidAmount,
-            paidAmountWithFines,
-            totalContractValue,
-            totalFinesValue
         });
 
         setInsights({
@@ -357,8 +313,7 @@ const Loans: React.FC = () => {
     useEffect(() => {
         if (user?.role && user?.userId) {
             fetchLoans(apiUrl, user, (data: Loan[]) => {
-                console.log('Dados recebidos da API:', data);
-                const normalized = data.map(loan => ({
+                const normalized = data.map((loan: Loan) => ({
                     ...loan,
                     installments: Array.isArray(loan.installments) ? loan.installments : [],
                 }));
@@ -372,6 +327,7 @@ const Loans: React.FC = () => {
     useEffect(() => {
         if (loans.length > 0) {
             calculateInsights(loans, selectedPeriod, customMonth);
+            setActiveFilter('ALL'); // Resetar filtro quando mudar o período
         }
     }, [selectedPeriod, customMonth]);
 
@@ -379,52 +335,154 @@ const Loans: React.FC = () => {
         localStorage.setItem('loanColumns', JSON.stringify(columns));
     }, [columns]);
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         setSearchTerm(e.target.value);
     };
 
-    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
         setStatusFilter(e.target.value);
     };
 
-    const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
         setSelectedPeriod(e.target.value);
     };
 
-    const handleCustomMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCustomMonthChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         setCustomMonth(e.target.value);
     };
 
-    // Filtrar empréstimos por período, nome e status
-    const filteredLoans = loans.filter(loan => {
+    const handleCardClick = (filterType: FilterType): void => {
+        setActiveFilter(activeFilter === filterType ? 'ALL' : filterType);
+    };
+
+    // Função para filtrar empréstimos baseado no card clicado
+    const getFilteredLoansByCard = (): Loan[] => {
+        const { targetMonth, targetYear } = getTargetPeriod();
+
+        switch (activeFilter) {
+            case 'INVESTED':
+                // Empréstimos ACTIVOS criados no período
+                return loans.filter((loan: Loan) => {
+                    if (loan.status !== 'ACTIVE') return false;
+                    const loanDate = new Date(loan.createdAt);
+                    return loanDate.getMonth() === targetMonth && loanDate.getFullYear() === targetYear;
+                });
+
+            case 'EXPECTED':
+                // Empréstimos com parcelas a vencer no período
+                return loans.filter((loan: Loan) => {
+                    if (loan.status !== 'ACTIVE' || !loan.installmentsList) return false;
+                    return loan.installmentsList.some((installment: Installment) => {
+                        const dueDate = new Date(installment.dueDate);
+                        return !installment.paid && 
+                               dueDate.getMonth() === targetMonth && 
+                               dueDate.getFullYear() === targetYear;
+                    });
+                });
+
+            case 'PAID':
+                // Empréstimos com pagamentos no período (parcelas pagas ou empréstimos concluídos)
+                return loans.filter((loan: Loan) => {
+                    // Empréstimos concluídos no período
+                    if (loan.status === 'PAID') {
+                        const paidDate = loan.updatedAt ? new Date(loan.updatedAt) : null;
+                        if (paidDate && paidDate.getMonth() === targetMonth && paidDate.getFullYear() === targetYear) {
+                            return true;
+                        }
+                    }
+                    
+                    // Parcelas pagas de empréstimos ativos no período
+                    if (loan.installmentsList) {
+                        return loan.installmentsList.some((installment: Installment) => {
+                            if (!installment.paid || !installment.paymentDate) return false;
+                            const paymentDate = new Date(installment.paymentDate);
+                            return paymentDate.getMonth() === targetMonth && 
+                                   paymentDate.getFullYear() === targetYear;
+                        });
+                    }
+                    
+                    return false;
+                });
+
+            case 'FINES':
+                // Empréstimos que geraram multas no período
+                return loans.filter((loan: Loan) => {
+                    if (!loan.installmentsList) return false;
+                    
+                    // Multas de parcelas pagas no período
+                    const hasPaidFines = loan.installmentsList.some((installment: Installment) => {
+                        if (!installment.paid || !installment.paymentDate) return false;
+                        const paymentDate = new Date(installment.paymentDate);
+                        const { fineAmount } = calcInstallmentFineUtil({
+                            ...installment,
+                            dueDate: new Date(installment.dueDate),
+                            paid: true
+                        });
+                        return fineAmount > 0 && 
+                               paymentDate.getMonth() === targetMonth && 
+                               paymentDate.getFullYear() === targetYear;
+                    });
+
+                    // Multas estimadas de parcelas não pagas no período
+                    const hasExpectedFines = loan.installmentsList.some((installment: Installment) => {
+                        const dueDate = new Date(installment.dueDate);
+                        if (!installment.paid && dueDate.getMonth() === targetMonth && dueDate.getFullYear() === targetYear) {
+                            const { fineAmount } = calcInstallmentFineUtil({
+                                ...installment,
+                                dueDate: new Date(installment.dueDate),
+                                paid: false
+                            });
+                            return fineAmount > 0;
+                        }
+                        return false;
+                    });
+
+                    return hasPaidFines || hasExpectedFines;
+                });
+
+            case 'TOTAL':
+                // Todos os empréstimos ativos
+                return loans.filter((loan: Loan) => loan.status === 'ACTIVE');
+
+            default:
+                return loans;
+        }
+    };
+
+    // Aplicar todos os filtros (período, card, busca e status)
+    const filteredLoans = loans.filter((loan: Loan) => {
         const matchesName = loan.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === "ALL" || loan.status === statusFilter;
-        const matchesPeriod = isLoanInSelectedPeriod(loan);
-        return matchesName && matchesStatus && matchesPeriod;
+        
+        // Aplicar filtro do card se não for 'ALL'
+        const cardFilteredLoans = getFilteredLoansByCard();
+        const matchesCardFilter = activeFilter === 'ALL' || cardFilteredLoans.some((l: Loan) => l.id === loan.id);
+        
+        return matchesName && matchesStatus && matchesCardFilter;
     });
 
-    const handleCloseModal = () => {
+    const handleCloseModal = (): void => {
         setIsModalOpen(false);
         setIsModalSuccessOpen(false);
     };
 
-    const handleNavigate = () => {
+    const handleNavigate = (): void => {
         navigate('/loan');
     };
 
-    const handleColumnToggle = (columnId: keyof Loan | 'daysLeft' | 'customerName' | 'totalFine' | 'installmentCount') => {
+    const handleColumnToggle = (columnId: keyof Loan | 'daysLeft' | 'customerName' | 'totalFine' | 'installmentCount'): void => {
         setColumns(columns.map(col =>
             col.id === columnId ? { ...col, visible: !col.visible } : col
         ));
     };
 
-    const resetColumns = () => {
+    const resetColumns = (): void => {
         setColumns(initialColumns);
     };
 
     const visibleColumns = columns.filter(col => col.visible);
 
-    const formatCurrency = (value: number) => {
+    const formatCurrency = (value: number): string => {
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'MZN',
@@ -433,7 +491,7 @@ const Loans: React.FC = () => {
         }).format(value);
     };
 
-    const getStatusBadge = (loan: Loan) => {
+    const getStatusBadge = (loan: Loan): JSX.Element => {
         const statusConfig = {
             PAID: { bg: 'bg-green-100/50', text: 'text-green-700', border: 'border-green-200', icon: <FiCheckCircle className="w-4 h-4" /> },
             PENDING: { bg: 'bg-yellow-100/50', text: 'text-yellow-700', border: 'border-yellow-200', icon: <FiClock className="w-4 h-4" /> },
@@ -458,7 +516,7 @@ const Loans: React.FC = () => {
         );
     };
 
-    const getDaysLeftBadge = (loan: Loan) => {
+    const getDaysLeftBadge = (loan: Loan): JSX.Element => {
         const daysLeft = calculateDaysLeft(String(loan.activatedAt), loan.paymentTerm);
 
         let className = 'inline-flex items-center rounded-md px-3 py-1 text-xs font-medium ring-1 ring-inset ';
@@ -482,7 +540,7 @@ const Loans: React.FC = () => {
         );
     };
 
-    const renderCellContent = (loan: Loan, column: ColumnConfig) => {
+    const renderCellContent = (loan: Loan, column: ColumnConfig): React.ReactNode => {
         const loanInstallments: Installment[] = (loan.installmentsList || []).map((inst: Installment) => ({
             ...inst,
             dueDate: new Date(inst.dueDate),
@@ -524,7 +582,7 @@ const Loans: React.FC = () => {
                         {getStatusBadge(loan)}
                         <select
                             value={loan.status}
-                            onChange={(e) =>
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                                 updateLoanStatus(
                                     loan.id,
                                     e.target.value,
@@ -554,6 +612,14 @@ const Loans: React.FC = () => {
         }
     };
 
+    // Função para determinar a classe do card baseado no filtro ativo
+    const getCardClassName = (filterType: FilterType): string => {
+        const baseClass = "bg-white rounded-lg border p-4 shadow-sm transition-all cursor-pointer hover:shadow-md";
+        return activeFilter === filterType 
+            ? `${baseClass} border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50` 
+            : `${baseClass} border-gray-200 hover:border-indigo-300`;
+    };
+
     return (
         <>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -564,6 +630,11 @@ const Loans: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <FiTrendingUp className="w-5 h-5 text-indigo-600" />
                                 <h3 className="text-base font-semibold text-gray-900">Insights Financeiros</h3>
+                                {activeFilter !== 'ALL' && (
+                                    <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                                        Filtro ativo
+                                    </span>
+                                )}
                             </div>
                             
                             <div className="flex items-center gap-3">
@@ -593,7 +664,10 @@ const Loans: React.FC = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* Card - Valor Investido */}
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div 
+                                className={getCardClassName('INVESTED')}
+                                onClick={() => handleCardClick('INVESTED')}
+                            >
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
@@ -604,7 +678,7 @@ const Loans: React.FC = () => {
                                             {formatCurrency(insights.investedAmount)}
                                         </p>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Empréstimos ativos em {insights.monthYear}
+                                            {activeFilter === 'INVESTED' ? 'Filtrando...' : 'Clique para filtrar'}
                                         </p>
                                     </div>
                                     <div className="bg-green-100 rounded-full p-2">
@@ -614,7 +688,10 @@ const Loans: React.FC = () => {
                             </div>
 
                             {/* Card - Valor Esperado (com e sem multa) */}
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div 
+                                className={getCardClassName('EXPECTED')}
+                                onClick={() => handleCardClick('EXPECTED')}
+                            >
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
@@ -635,7 +712,7 @@ const Loans: React.FC = () => {
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            A receber em {insights.monthYear}
+                                            {activeFilter === 'EXPECTED' ? 'Filtrando...' : 'Clique para filtrar'}
                                         </p>
                                     </div>
                                     <div className="bg-blue-100 rounded-full p-2">
@@ -645,7 +722,10 @@ const Loans: React.FC = () => {
                             </div>
 
                             {/* Card - Valor Pago (com e sem multa) */}
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div 
+                                className={getCardClassName('PAID')}
+                                onClick={() => handleCardClick('PAID')}
+                            >
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
@@ -666,7 +746,7 @@ const Loans: React.FC = () => {
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Recebido em {insights.monthYear}
+                                            {activeFilter === 'PAID' ? 'Filtrando...' : 'Clique para filtrar'}
                                         </p>
                                     </div>
                                     <div className="bg-emerald-100 rounded-full p-2">
@@ -676,7 +756,10 @@ const Loans: React.FC = () => {
                             </div>
 
                             {/* Card - Resumo Total */}
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div 
+                                className={getCardClassName('TOTAL')}
+                                onClick={() => handleCardClick('TOTAL')}
+                            >
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
@@ -686,7 +769,13 @@ const Loans: React.FC = () => {
                                         <p className="text-lg font-semibold text-gray-900">
                                             Contratos: {formatCurrency(insights.totalContractValue)}
                                         </p>
-                                        <div className="flex items-center gap-2 mt-1">
+                                        <div 
+                                            className="flex items-center gap-2 mt-1 cursor-pointer hover:opacity-70"
+                                            onClick={(e: React.MouseEvent) => {
+                                                e.stopPropagation();
+                                                handleCardClick('FINES');
+                                            }}
+                                        >
                                             <span className="text-xs text-gray-500">
                                                 Multas totais:
                                             </span>
@@ -695,7 +784,7 @@ const Loans: React.FC = () => {
                                             </span>
                                         </div>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Total a receber no fim dos contratos
+                                            {activeFilter === 'TOTAL' ? 'Filtrando...' : 'Clique para filtrar contratos'}
                                         </p>
                                     </div>
                                     <div className="bg-purple-100 rounded-full p-2">
@@ -705,24 +794,35 @@ const Loans: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Indicador de performance */}
-                        <div className="mt-4 flex items-center justify-end gap-4 text-xs">
-                            <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span className="text-gray-600">Investido</span>
+                        {/* Indicador de performance e filtro ativo */}
+                        <div className="mt-4 flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-xs">
+                                <div className="flex items-center gap-1">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-gray-600">Investido</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span className="text-gray-600">Esperado</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                    <span className="text-gray-600">Pago</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                    <span className="text-gray-600">Multas</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                <span className="text-gray-600">Esperado</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                                <span className="text-gray-600">Pago</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                <span className="text-gray-600">Multas</span>
-                            </div>
+                            
+                            {activeFilter !== 'ALL' && (
+                                <button
+                                    onClick={() => setActiveFilter('ALL')}
+                                    className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                >
+                                    Limpar filtro
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -733,9 +833,18 @@ const Loans: React.FC = () => {
                         <div className="min-w-0 flex-1">
                             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                                 Lista de Empréstimos - {insights.monthYear}
+                                {activeFilter !== 'ALL' && (
+                                    <span className="ml-2 text-sm font-normal text-indigo-600">
+                                        (Filtrado por {activeFilter === 'INVESTED' ? 'Valor Investido' : 
+                                                          activeFilter === 'EXPECTED' ? 'Valor Esperado' : 
+                                                          activeFilter === 'PAID' ? 'Valor Pago' : 
+                                                          activeFilter === 'TOTAL' ? 'Contratos Ativos' : 
+                                                          activeFilter === 'FINES' ? 'Multas' : ''})
+                                    </span>
+                                )}
                             </h2>
                             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                                {filteredLoans.length} empréstimo{filteredLoans.length !== 1 ? 's' : ''} encontrado{filteredLoans.length !== 1 ? 's' : ''} no período
+                                {filteredLoans.length} empréstimo{filteredLoans.length !== 1 ? 's' : ''} encontrado{filteredLoans.length !== 1 ? 's' : ''}
                             </p>
                         </div>
 
@@ -808,7 +917,7 @@ const Loans: React.FC = () => {
                             </button>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                            {columns.map((column) => (
+                            {columns.map((column: ColumnConfig) => (
                                 <label
                                     key={column.id}
                                     className="inline-flex items-center px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 cursor-pointer"
@@ -834,7 +943,7 @@ const Loans: React.FC = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    {visibleColumns.map((column) => (
+                                    {visibleColumns.map((column: ColumnConfig) => (
                                         <th
                                             key={column.id}
                                             scope="col"
@@ -864,19 +973,29 @@ const Loans: React.FC = () => {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
                                                 <p className="text-sm sm:text-base text-gray-500 font-medium">
-                                                    Nenhum empréstimo encontrado em {insights.monthYear}
+                                                    Nenhum empréstimo encontrado
                                                 </p>
                                                 <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                                                    {searchTerm ? 'Tente pesquisar com outros termos' : 'Selecione outro período para visualizar empréstimos'}
+                                                    {searchTerm ? 'Tente pesquisar com outros termos' : 
+                                                     activeFilter !== 'ALL' ? 'Não há empréstimos para este filtro no período selecionado' : 
+                                                     'Selecione um período para visualizar empréstimos'}
                                                 </p>
+                                                {activeFilter !== 'ALL' && (
+                                                    <button
+                                                        onClick={() => setActiveFilter('ALL')}
+                                                        className="mt-3 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                                    >
+                                                        Limpar filtro
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredLoans.map(loan => (
+                                    filteredLoans.map((loan: Loan) => (
                                         <React.Fragment key={loan.id}>
                                             <tr className="hover:bg-gray-50">
-                                                {visibleColumns.map((column) => (
+                                                {visibleColumns.map((column: ColumnConfig) => (
                                                     <td
                                                         key={`${loan.id}-${column.id}`}
                                                         className={`px-3 sm:px-4 py-3 text-sm ${
@@ -979,7 +1098,7 @@ const Loans: React.FC = () => {
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        {installments.map((inst, idx) => {
+                                                                        {installments.map((inst: Installment, idx: number) => {
                                                                             const { fineAmount } = calcInstallmentFineUtil({
                                                                                 ...inst,
                                                                                 dueDate: new Date(inst.dueDate),
@@ -1079,7 +1198,7 @@ const Loans: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <p className="text-xs sm:text-sm text-gray-500">
                                     <span className="font-medium">{filteredLoans.length}</span> de{' '}
-                                    <span className="font-medium">{loans.length}</span> empréstimos no período
+                                    <span className="font-medium">{loans.length}</span> empréstimos
                                 </p>
                                 {visibleColumns.length < columns.length && (
                                     <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
@@ -1099,6 +1218,14 @@ const Loans: React.FC = () => {
                                     </svg>
                                     Colunas ({visibleColumns.length}/{columns.length})
                                 </button>
+                                {activeFilter !== 'ALL' && (
+                                    <button
+                                        onClick={() => setActiveFilter('ALL')}
+                                        className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                    >
+                                        Limpar filtro
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
