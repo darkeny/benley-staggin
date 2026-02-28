@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { FiCheckCircle, FiClock, FiDownload, FiLoader, FiXCircle, FiEye, FiTrendingUp, FiDollarSign, FiCalendar } from "react-icons/fi";
+import { FiCheckCircle, FiClock, FiDownload, FiLoader, FiXCircle, FiEye, FiTrendingUp, FiDollarSign, FiCalendar, FiAlertCircle } from "react-icons/fi";
 import { TbPointFilled } from "react-icons/tb";
 import { FcSurvey } from "react-icons/fc";
 import { Alert } from '../Modal/alert';
@@ -31,7 +31,11 @@ interface ColumnConfig {
 interface InsightData {
     investedAmount: number;
     expectedAmount: number;
+    expectedAmountWithFines: number;
+    paidAmount: number;
+    paidAmountWithFines: number;
     totalContractValue: number;
+    totalFinesValue: number;
     monthYear: string;
 }
 
@@ -59,7 +63,11 @@ const Loans: React.FC = () => {
     const [insights, setInsights] = useState<InsightData>({
         investedAmount: 0,
         expectedAmount: 0,
+        expectedAmountWithFines: 0,
+        paidAmount: 0,
+        paidAmountWithFines: 0,
         totalContractValue: 0,
+        totalFinesValue: 0,
         monthYear: ''
     });
 
@@ -152,11 +160,30 @@ const Loans: React.FC = () => {
         return saved ? JSON.parse(saved) : initialColumns;
     });
 
+    // Função para calcular multa de uma parcela específica
+    const calculateInstallmentFine = (installment: Installment): number => {
+        if (installment.paid && installment.paymentDate) {
+            const dueDate = new Date(installment.dueDate);
+            const paymentDate = new Date(installment.paymentDate);
+            
+            if (paymentDate > dueDate) {
+                const daysLate = Math.ceil((paymentDate.getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
+                // Considerando multa de 2% ao dia (ajuste conforme sua regra de negócio)
+                return Number((installment.amount * 0.02 * daysLate).toFixed(2));
+            }
+        }
+        return 0;
+    };
+
     // Função para calcular os insights baseado no período selecionado
     const calculateInsights = (loansData: Loan[], period: string, customDate: string) => {
         let investedAmount = 0;
         let expectedAmount = 0;
+        let expectedAmountWithFines = 0;
+        let paidAmount = 0;
+        let paidAmountWithFines = 0;
         let totalContractValue = 0;
+        let totalFinesValue = 0;
         let monthYear = '';
 
         const now = new Date();
@@ -173,7 +200,7 @@ const Loans: React.FC = () => {
         } else if (period === 'custom' && customDate) {
             const [year, month] = customDate.split('-').map(Number);
             targetYear = year;
-            targetMonth = month - 1; // Mês em JS é 0-based
+            targetMonth = month - 1;
         }
 
         monthYear = new Date(targetYear, targetMonth).toLocaleDateString('pt-BR', { 
@@ -181,8 +208,10 @@ const Loans: React.FC = () => {
             year: 'numeric' 
         });
 
+        console.log('Calculando insights para:', { targetMonth, targetYear, period });
+
         loansData.forEach(loan => {
-            // Valor investido: apenas empréstimos ACTIVOS no período selecionado
+            // Valor investido: apenas empréstimos ACTIVOS criados no período selecionado
             if (loan.status === 'ACTIVE') {
                 const loanDate = new Date(loan.createdAt);
                 if (loanDate.getMonth() === targetMonth && loanDate.getFullYear() === targetYear) {
@@ -193,21 +222,106 @@ const Loans: React.FC = () => {
                 totalContractValue += loan.balanceDue;
             }
 
-            // Valor esperado: parcelas não pagas com vencimento no período (apenas de empréstimos ativos)
-            if (loan.status === 'ACTIVE' && loan.installmentsList && loan.installmentsList.length > 0) {
+            // Verificar empréstimos com status PAID no período selecionado
+            if (loan.status === 'PAID') {
+                // Verificar se o empréstimo foi pago no período selecionado
+                // Usando updatedAt como data de pagamento (ajuste conforme sua estrutura)
+                const paidDate = loan.updatedAt ? new Date(loan.updatedAt) : null;
+                
+                if (paidDate && paidDate.getMonth() === targetMonth && paidDate.getFullYear() === targetYear) {
+                    // Calcular multas para todas as parcelas deste empréstimo pago
+                    let totalFineForLoan = 0;
+                    
+                    if (loan.installmentsList && loan.installmentsList.length > 0) {
+                        loan.installmentsList.forEach((installment: Installment) => {
+                            if (installment.paid && installment.paymentDate) {
+                                const fine = calculateInstallmentFine(installment);
+                                totalFineForLoan += fine;
+                            }
+                        });
+                    }
+                    
+                    // Usar balanceDue em vez de loanAmount para o valor pago
+                    paidAmount += loan.balanceDue;
+                    paidAmountWithFines += loan.balanceDue + totalFineForLoan;
+                    totalFinesValue += totalFineForLoan;
+                    
+                    console.log('Empréstimo pago encontrado:', {
+                        loanId: loan.id,
+                        customer: loan.customer.fullName,
+                        loanAmount: loan.loanAmount,
+                        balanceDue: loan.balanceDue,
+                        totalFine: totalFineForLoan,
+                        paidDate: paidDate.toISOString()
+                    });
+                }
+            }
+
+            // Análise de parcelas (para valores esperados e parcelas pagas de empréstimos ativos)
+            if (loan.installmentsList && loan.installmentsList.length > 0) {
                 loan.installmentsList.forEach((installment: Installment) => {
                     const dueDate = new Date(installment.dueDate);
-                    if (dueDate.getMonth() === targetMonth && dueDate.getFullYear() === targetYear && !installment.paid) {
-                        expectedAmount += installment.amount;
+                    
+                    // Calcular multa para parcelas pagas de empréstimos ACTIVOS
+                    if (installment.paid && installment.paymentDate) {
+                        const paymentDate = new Date(installment.paymentDate);
+                        const fine = calculateInstallmentFine(installment);
+                        
+                        // Se o pagamento da parcela foi no período selecionado E o empréstimo ainda está ACTIVO
+                        // (porque se estiver PAID, já foi contabilizado acima)
+                        if (paymentDate.getMonth() === targetMonth && paymentDate.getFullYear() === targetYear && loan.status !== 'PAID') {
+                            paidAmount += installment.amount;
+                            paidAmountWithFines += installment.amount + fine;
+                            totalFinesValue += fine;
+                            
+                            console.log('Parcela paga de empréstimo ativo:', {
+                                loanId: loan.id,
+                                installmentNumber: installment.installmentNumber,
+                                amount: installment.amount,
+                                fine: fine,
+                                paymentDate: paymentDate.toISOString()
+                            });
+                        }
+                    }
+
+                    // Verificar parcelas com vencimento no período (não pagas)
+                    if (dueDate.getMonth() === targetMonth && dueDate.getFullYear() === targetYear) {
+                        if (!installment.paid && loan.status === 'ACTIVE') {
+                            expectedAmount += installment.amount;
+                            
+                            // Calcular multa estimada se já estiver atrasada
+                            const today = new Date();
+                            if (today > dueDate) {
+                                const daysLate = Math.ceil((today.getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
+                                const estimatedFine = Number((installment.amount * 0.02 * daysLate).toFixed(2));
+                                expectedAmountWithFines += installment.amount + estimatedFine;
+                            } else {
+                                expectedAmountWithFines += installment.amount;
+                            }
+                        }
                     }
                 });
             }
         });
 
+        console.log('Resultados dos insights:', {
+            investedAmount,
+            expectedAmount,
+            expectedAmountWithFines,
+            paidAmount,
+            paidAmountWithFines,
+            totalContractValue,
+            totalFinesValue
+        });
+
         setInsights({
             investedAmount,
             expectedAmount,
+            expectedAmountWithFines,
+            paidAmount,
+            paidAmountWithFines,
             totalContractValue,
+            totalFinesValue,
             monthYear: monthYear.charAt(0).toUpperCase() + monthYear.slice(1)
         });
     };
@@ -215,6 +329,7 @@ const Loans: React.FC = () => {
     useEffect(() => {
         if (user?.role && user?.userId) {
             fetchLoans(apiUrl, user, (data: Loan[]) => {
+                console.log('Dados recebidos da API:', data);
                 const normalized = data.map(loan => ({
                     ...loan,
                     installments: Array.isArray(loan.installments) ? loan.installments : [],
@@ -227,8 +342,10 @@ const Loans: React.FC = () => {
 
     // Recalcular insights quando o período mudar
     useEffect(() => {
-        calculateInsights(loans, selectedPeriod, customMonth);
-    }, [selectedPeriod, customMonth, loans]);
+        if (loans.length > 0) {
+            calculateInsights(loans, selectedPeriod, customMonth);
+        }
+    }, [selectedPeriod, customMonth]);
 
     useEffect(() => {
         localStorage.setItem('loanColumns', JSON.stringify(columns));
@@ -248,9 +365,6 @@ const Loans: React.FC = () => {
 
     const handleCustomMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCustomMonth(e.target.value);
-        if (selectedPeriod === 'custom') {
-            calculateInsights(loans, 'custom', e.target.value);
-        }
     };
 
     const filteredLoans = loans.filter(loan => {
@@ -446,7 +560,7 @@ const Loans: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {/* Card - Valor Investido */}
                         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                             <div className="flex items-start justify-between">
@@ -468,17 +582,27 @@ const Loans: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Card - Valor Esperado no Mês */}
+                        {/* Card - Valor Esperado (com e sem multa) */}
                         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                             <div className="flex items-start justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
                                         <FiCalendar className="w-4 h-4 text-blue-600" />
-                                        Valor Esperado no Mês
+                                        Valor Esperado
                                     </p>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(insights.expectedAmount)}
+                                        {formatCurrency(insights.expectedAmountWithFines)}
                                     </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs text-gray-500">
+                                            Sem multa: {formatCurrency(insights.expectedAmount)}
+                                        </span>
+                                        {insights.expectedAmountWithFines > insights.expectedAmount && (
+                                            <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
+                                                +{formatCurrency(insights.expectedAmountWithFines - insights.expectedAmount)} multas
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-gray-500 mt-1">
                                         A receber em {insights.monthYear}
                                     </p>
@@ -489,25 +613,84 @@ const Loans: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Card - Valor Total dos Contratos Ativos */}
+                        {/* Card - Valor Pago (com e sem multa) */}
                         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
                             <div className="flex items-start justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
-                                        <FiTrendingUp className="w-4 h-4 text-purple-600" />
-                                        Total Contratos Ativos
+                                        <FiCheckCircle className="w-4 h-4 text-emerald-600" />
+                                        Valor Pago
                                     </p>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {formatCurrency(insights.totalContractValue)}
+                                        {formatCurrency(insights.paidAmountWithFines)}
                                     </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs text-gray-500">
+                                            Sem multa: {formatCurrency(insights.paidAmount)}
+                                        </span>
+                                        {insights.paidAmountWithFines > insights.paidAmount && (
+                                            <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">
+                                                +{formatCurrency(insights.paidAmountWithFines - insights.paidAmount)} multas
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Valor total a receber no fim dos contratos
+                                        Recebido em {insights.monthYear}
+                                    </p>
+                                </div>
+                                <div className="bg-emerald-100 rounded-full p-2">
+                                    <FiCheckCircle className="w-5 h-5 text-emerald-600" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Card - Resumo Total */}
+                        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                        <FiAlertCircle className="w-4 h-4 text-purple-600" />
+                                        Resumo Total
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        Contratos: {formatCurrency(insights.totalContractValue)}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs text-gray-500">
+                                            Multas totais:
+                                        </span>
+                                        <span className="text-xs font-medium text-orange-600">
+                                            {formatCurrency(insights.totalFinesValue)}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Total a receber no fim dos contratos
                                     </p>
                                 </div>
                                 <div className="bg-purple-100 rounded-full p-2">
-                                    <FiCalendar className="w-5 h-5 text-purple-600" />
+                                    <FiTrendingUp className="w-5 h-5 text-purple-600" />
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Indicador de performance */}
+                    <div className="mt-4 flex items-center justify-end gap-4 text-xs">
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-gray-600">Investido</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="text-gray-600">Esperado</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                            <span className="text-gray-600">Pago</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            <span className="text-gray-600">Multas</span>
                         </div>
                     </div>
                 </div>
@@ -750,67 +933,80 @@ const Loans: React.FC = () => {
                                                                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Parcela</th>
                                                                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Data Vencimento</th>
                                                                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Valor</th>
+                                                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Multa</th>
                                                                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Data Pagamento</th>
                                                                             <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Pago</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        {installments.map((inst, idx) => (
-                                                                            <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                                                                <td className="px-4 py-2 text-sm text-gray-600">
-                                                                                    {{
-                                                                                        1: 'Primeira',
-                                                                                        2: 'Segunda',
-                                                                                        3: 'Terceira',
-                                                                                    }[inst.installmentNumber] || `${inst.installmentNumber}ª`}
-                                                                                </td>
-                                                                                <td className="px-4 py-2 text-sm text-gray-600">
-                                                                                    {inst.dueDate instanceof Date
-                                                                                        ? inst.dueDate.toLocaleDateString('pt-BR')
-                                                                                        : new Date(inst.dueDate).toLocaleDateString('pt-BR')}
-                                                                                </td>
-                                                                                <td className="px-4 py-2 text-sm text-gray-600 font-medium">
-                                                                                    {formatCurrency(inst.amount)}
-                                                                                </td>
-                                                                                <td className="px-4 py-2 text-sm text-gray-600">
-                                                                                    {inst.paymentDate ? new Date(inst.paymentDate).toLocaleDateString('pt-BR') : '-'}
-                                                                                </td>
-                                                                                <td className="px-4 py-2 text-sm text-center">
-                                                                                    {user.role === 'ADMIN' ? (
-                                                                                        <button
-                                                                                            onClick={() =>
-                                                                                                markInstallmentAsPaid(inst.id, installments, {
-                                                                                                    setInstallments,
-                                                                                                    setAlertText,
-                                                                                                    setIsModalSuccessOpen,
-                                                                                                    setIsModalOpen,
-                                                                                                })
-                                                                                            }
-                                                                                            className={`inline-flex items-center justify-center w-7 h-7 rounded-full hover:opacity-70 ${inst.paid
-                                                                                                    ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                                                                                    : 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                                                                }`}
-                                                                                            title={inst.paid ? 'Marcar como não pago' : 'Marcar como pago'}
-                                                                                        >
-                                                                                            {inst.paid ?
-                                                                                                <FiCheckCircle className="w-4 h-4" /> :
-                                                                                                <FiXCircle className="w-4 h-4" />
-                                                                                            }
-                                                                                        </button>
-                                                                                    ) : (
-                                                                                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${inst.paid
-                                                                                                ? 'bg-green-100 text-green-600'
-                                                                                                : 'bg-red-100 text-red-600'
-                                                                                            }`}>
-                                                                                            {inst.paid ?
-                                                                                                <FiCheckCircle className="w-4 h-4" /> :
-                                                                                                <FiXCircle className="w-4 h-4" />
-                                                                                            }
-                                                                                        </span>
-                                                                                    )}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
+                                                                        {installments.map((inst, idx) => {
+                                                                            const fine = calculateInstallmentFine(inst);
+                                                                            return (
+                                                                                <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                                                                    <td className="px-4 py-2 text-sm text-gray-600">
+                                                                                        {{
+                                                                                            1: 'Primeira',
+                                                                                            2: 'Segunda',
+                                                                                            3: 'Terceira',
+                                                                                        }[inst.installmentNumber] || `${inst.installmentNumber}ª`}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2 text-sm text-gray-600">
+                                                                                        {inst.dueDate instanceof Date
+                                                                                            ? inst.dueDate.toLocaleDateString('pt-BR')
+                                                                                            : new Date(inst.dueDate).toLocaleDateString('pt-BR')}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2 text-sm text-gray-600 font-medium">
+                                                                                        {formatCurrency(inst.amount)}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2 text-sm">
+                                                                                        {fine > 0 ? (
+                                                                                            <span className="text-orange-600 font-medium">
+                                                                                                {formatCurrency(fine)}
+                                                                                            </span>
+                                                                                        ) : (
+                                                                                            <span className="text-gray-400">-</span>
+                                                                                        )}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2 text-sm text-gray-600">
+                                                                                        {inst.paymentDate ? new Date(inst.paymentDate).toLocaleDateString('pt-BR') : '-'}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2 text-sm text-center">
+                                                                                        {user.role === 'ADMIN' ? (
+                                                                                            <button
+                                                                                                onClick={() =>
+                                                                                                    markInstallmentAsPaid(inst.id, installments, {
+                                                                                                        setInstallments,
+                                                                                                        setAlertText,
+                                                                                                        setIsModalSuccessOpen,
+                                                                                                        setIsModalOpen,
+                                                                                                    })
+                                                                                                }
+                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full hover:opacity-70 ${inst.paid
+                                                                                                        ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                                                                                                        : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                                                                    }`}
+                                                                                                title={inst.paid ? 'Marcar como não pago' : 'Marcar como pago'}
+                                                                                            >
+                                                                                                {inst.paid ?
+                                                                                                    <FiCheckCircle className="w-4 h-4" /> :
+                                                                                                    <FiXCircle className="w-4 h-4" />
+                                                                                                }
+                                                                                            </button>
+                                                                                        ) : (
+                                                                                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${inst.paid
+                                                                                                    ? 'bg-green-100 text-green-600'
+                                                                                                    : 'bg-red-100 text-red-600'
+                                                                                                }`}>
+                                                                                                {inst.paid ?
+                                                                                                    <FiCheckCircle className="w-4 h-4" /> :
+                                                                                                    <FiXCircle className="w-4 h-4" />
+                                                                                                }
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </td>
+                                                                                </tr>
+                                                                            );
+                                                                        })}
                                                                     </tbody>
                                                                 </table>
                                                             </div>
