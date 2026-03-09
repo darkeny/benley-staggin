@@ -18,6 +18,7 @@ import {
 import { Installment, Loan } from '../../@types/customer';
 import { calculateTotalFines, calculateInstallmentFine as calcInstallmentFineUtil } from '../../utils/loans/installmentsFines';
 import { markInstallmentAsPaid } from '../../utils/installments/fetchInstallments';
+import { handleDownloadPaymentNotice } from '../../utils/loans/paymentNotice';
 
 interface ColumnConfig {
     id: keyof Loan | 'daysLeft' | 'customerName' | 'totalFine' | 'installmentCount';
@@ -56,6 +57,15 @@ const Loans: React.FC = () => {
     const [showColumnConfig, setShowColumnConfig] = useState(false);
     const { user } = useFetchUserData();
     const apiUrl = import.meta.env.VITE_APP_API_URL;
+
+    // Estados para loading independente dos botões de download
+    const [loadingStates, setLoadingStates] = useState<{
+        contract: string | null;
+        paymentNotice: string | null;
+    }>({
+        contract: null,
+        paymentNotice: null
+    });
 
     // Estados para o mini dashboard
     const [selectedPeriod, setSelectedPeriod] = useState<string>('current');
@@ -213,9 +223,9 @@ const Loans: React.FC = () => {
             targetMonth = month - 1;
         }
 
-        monthYear = new Date(targetYear, targetMonth).toLocaleDateString('pt-BR', { 
-            month: 'long', 
-            year: 'numeric' 
+        monthYear = new Date(targetYear, targetMonth).toLocaleDateString('pt-BR', {
+            month: 'long',
+            year: 'numeric'
         });
 
         loansData.forEach((loan: Loan) => {
@@ -233,11 +243,11 @@ const Loans: React.FC = () => {
             // Verificar empréstimos com status PAID no período selecionado
             if (loan.status === 'PAID') {
                 const paidDate = loan.updatedAt ? new Date(loan.updatedAt) : null;
-                
+
                 if (paidDate && paidDate.getMonth() === targetMonth && paidDate.getFullYear() === targetYear) {
                     // Calcular multas para todas as parcelas deste empréstimo pago
                     let totalFineForLoan = 0;
-                    
+
                     if (loan.installmentsList && loan.installmentsList.length > 0) {
                         loan.installmentsList.forEach((installment: Installment) => {
                             if (installment.paid && installment.paymentDate) {
@@ -250,7 +260,7 @@ const Loans: React.FC = () => {
                             }
                         });
                     }
-                    
+
                     paidAmount += loan.balanceDue;
                     paidAmountWithFines += loan.balanceDue + totalFineForLoan;
                     totalFinesValue += totalFineForLoan;
@@ -261,17 +271,17 @@ const Loans: React.FC = () => {
             if (loan.installmentsList && loan.installmentsList.length > 0) {
                 loan.installmentsList.forEach((installment: Installment) => {
                     const dueDate = new Date(installment.dueDate);
-                    
+
                     // Calcular multa para parcelas pagas de empréstimos ACTIVOS
                     if (installment.paid && installment.paymentDate) {
                         const paymentDate = new Date(installment.paymentDate);
-                        
+
                         const { fineAmount } = calcInstallmentFineUtil({
                             ...installment,
                             dueDate: new Date(installment.dueDate),
                             paid: true
                         });
-                        
+
                         // Se o pagamento da parcela foi no período selecionado E o empréstimo ainda está ACTIVO
                         if (paymentDate.getMonth() === targetMonth && paymentDate.getFullYear() === targetYear && loan.status !== 'PAID') {
                             paidAmount += installment.amount;
@@ -284,13 +294,13 @@ const Loans: React.FC = () => {
                     if (dueDate.getMonth() === targetMonth && dueDate.getFullYear() === targetYear) {
                         if (!installment.paid && loan.status === 'ACTIVE') {
                             expectedAmount += installment.amount;
-                            
+
                             const { fineAmount } = calcInstallmentFineUtil({
                                 ...installment,
                                 dueDate: new Date(installment.dueDate),
                                 paid: false
                             });
-                            
+
                             expectedAmountWithFines += installment.amount + fineAmount;
                         }
                     }
@@ -335,6 +345,25 @@ const Loans: React.FC = () => {
         localStorage.setItem('loanColumns', JSON.stringify(columns));
     }, [columns]);
 
+    // Funções para download com loading independente
+    const handleDownloadPaymentNoticeClick = async (loanId: string, customerName: string) => {
+        setLoadingStates(prev => ({ ...prev, paymentNotice: loanId }));
+        try {
+            await handleDownloadPaymentNotice(loanId, customerName, apiUrl, () => {});
+        } finally {
+            setLoadingStates(prev => ({ ...prev, paymentNotice: null }));
+        }
+    };
+
+    const handleDownloadContractClick = async (loanId: string, customerName: string) => {
+        setLoadingStates(prev => ({ ...prev, contract: loanId }));
+        try {
+            await handleDownloadContract(loanId, customerName, apiUrl, () => {});
+        } finally {
+            setLoadingStates(prev => ({ ...prev, contract: null }));
+        }
+    };
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         setSearchTerm(e.target.value);
     };
@@ -353,6 +382,25 @@ const Loans: React.FC = () => {
 
     const handleCardClick = (filterType: FilterType): void => {
         setActiveFilter(activeFilter === filterType ? 'ALL' : filterType);
+    };
+
+    const handleCloseModal = (): void => {
+        setIsModalOpen(false);
+        setIsModalSuccessOpen(false);
+    };
+
+    const handleNavigate = (): void => {
+        navigate('/loan');
+    };
+
+    const handleColumnToggle = (columnId: keyof Loan | 'daysLeft' | 'customerName' | 'totalFine' | 'installmentCount'): void => {
+        setColumns(columns.map(col =>
+            col.id === columnId ? { ...col, visible: !col.visible } : col
+        ));
+    };
+
+    const resetColumns = (): void => {
+        setColumns(initialColumns);
     };
 
     // Função para filtrar empréstimos baseado no card clicado
@@ -374,9 +422,9 @@ const Loans: React.FC = () => {
                     if (loan.status !== 'ACTIVE' || !loan.installmentsList) return false;
                     return loan.installmentsList.some((installment: Installment) => {
                         const dueDate = new Date(installment.dueDate);
-                        return !installment.paid && 
-                               dueDate.getMonth() === targetMonth && 
-                               dueDate.getFullYear() === targetYear;
+                        return !installment.paid &&
+                            dueDate.getMonth() === targetMonth &&
+                            dueDate.getFullYear() === targetYear;
                     });
                 });
 
@@ -390,17 +438,17 @@ const Loans: React.FC = () => {
                             return true;
                         }
                     }
-                    
+
                     // Parcelas pagas de empréstimos ativos no período
                     if (loan.installmentsList) {
                         return loan.installmentsList.some((installment: Installment) => {
                             if (!installment.paid || !installment.paymentDate) return false;
                             const paymentDate = new Date(installment.paymentDate);
-                            return paymentDate.getMonth() === targetMonth && 
-                                   paymentDate.getFullYear() === targetYear;
+                            return paymentDate.getMonth() === targetMonth &&
+                                paymentDate.getFullYear() === targetYear;
                         });
                     }
-                    
+
                     return false;
                 });
 
@@ -408,7 +456,7 @@ const Loans: React.FC = () => {
                 // Empréstimos que geraram multas no período
                 return loans.filter((loan: Loan) => {
                     if (!loan.installmentsList) return false;
-                    
+
                     // Multas de parcelas pagas no período
                     const hasPaidFines = loan.installmentsList.some((installment: Installment) => {
                         if (!installment.paid || !installment.paymentDate) return false;
@@ -418,9 +466,9 @@ const Loans: React.FC = () => {
                             dueDate: new Date(installment.dueDate),
                             paid: true
                         });
-                        return fineAmount > 0 && 
-                               paymentDate.getMonth() === targetMonth && 
-                               paymentDate.getFullYear() === targetYear;
+                        return fineAmount > 0 &&
+                            paymentDate.getMonth() === targetMonth &&
+                            paymentDate.getFullYear() === targetYear;
                     });
 
                     // Multas estimadas de parcelas não pagas no período
@@ -453,32 +501,13 @@ const Loans: React.FC = () => {
     const filteredLoans = loans.filter((loan: Loan) => {
         const matchesName = loan.customer.fullName.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === "ALL" || loan.status === statusFilter;
-        
+
         // Aplicar filtro do card se não for 'ALL'
         const cardFilteredLoans = getFilteredLoansByCard();
         const matchesCardFilter = activeFilter === 'ALL' || cardFilteredLoans.some((l: Loan) => l.id === loan.id);
-        
+
         return matchesName && matchesStatus && matchesCardFilter;
     });
-
-    const handleCloseModal = (): void => {
-        setIsModalOpen(false);
-        setIsModalSuccessOpen(false);
-    };
-
-    const handleNavigate = (): void => {
-        navigate('/loan');
-    };
-
-    const handleColumnToggle = (columnId: keyof Loan | 'daysLeft' | 'customerName' | 'totalFine' | 'installmentCount'): void => {
-        setColumns(columns.map(col =>
-            col.id === columnId ? { ...col, visible: !col.visible } : col
-        ));
-    };
-
-    const resetColumns = (): void => {
-        setColumns(initialColumns);
-    };
 
     const visibleColumns = columns.filter(col => col.visible);
 
@@ -615,8 +644,8 @@ const Loans: React.FC = () => {
     // Função para determinar a classe do card baseado no filtro ativo
     const getCardClassName = (filterType: FilterType): string => {
         const baseClass = "bg-white rounded-lg border p-4 shadow-sm transition-all cursor-pointer hover:shadow-md";
-        return activeFilter === filterType 
-            ? `${baseClass} border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50` 
+        return activeFilter === filterType
+            ? `${baseClass} border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50`
             : `${baseClass} border-gray-200 hover:border-indigo-300`;
     };
 
@@ -636,7 +665,7 @@ const Loans: React.FC = () => {
                                     </span>
                                 )}
                             </div>
-                            
+
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2">
                                     <FiCalendar className="w-4 h-4 text-gray-500" />
@@ -650,7 +679,7 @@ const Loans: React.FC = () => {
                                         <option value="custom">Personalizado</option>
                                     </select>
                                 </div>
-                                
+
                                 {selectedPeriod === 'custom' && (
                                     <input
                                         type="month"
@@ -664,7 +693,7 @@ const Loans: React.FC = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* Card - Valor Investido */}
-                            <div 
+                            <div
                                 className={getCardClassName('INVESTED')}
                                 onClick={() => handleCardClick('INVESTED')}
                             >
@@ -688,7 +717,7 @@ const Loans: React.FC = () => {
                             </div>
 
                             {/* Card - Valor Esperado (com e sem multa) */}
-                            <div 
+                            <div
                                 className={getCardClassName('EXPECTED')}
                                 onClick={() => handleCardClick('EXPECTED')}
                             >
@@ -722,7 +751,7 @@ const Loans: React.FC = () => {
                             </div>
 
                             {/* Card - Valor Pago (com e sem multa) */}
-                            <div 
+                            <div
                                 className={getCardClassName('PAID')}
                                 onClick={() => handleCardClick('PAID')}
                             >
@@ -756,7 +785,7 @@ const Loans: React.FC = () => {
                             </div>
 
                             {/* Card - Resumo Total */}
-                            <div 
+                            <div
                                 className={getCardClassName('TOTAL')}
                                 onClick={() => handleCardClick('TOTAL')}
                             >
@@ -769,7 +798,7 @@ const Loans: React.FC = () => {
                                         <p className="text-lg font-semibold text-gray-900">
                                             Contratos: {formatCurrency(insights.totalContractValue)}
                                         </p>
-                                        <div 
+                                        <div
                                             className="flex items-center gap-2 mt-1 cursor-pointer hover:opacity-70"
                                             onClick={(e: React.MouseEvent) => {
                                                 e.stopPropagation();
@@ -814,7 +843,7 @@ const Loans: React.FC = () => {
                                     <span className="text-gray-600">Multas</span>
                                 </div>
                             </div>
-                            
+
                             {activeFilter !== 'ALL' && (
                                 <button
                                     onClick={() => setActiveFilter('ALL')}
@@ -835,11 +864,11 @@ const Loans: React.FC = () => {
                                 Lista de Empréstimos - {insights.monthYear}
                                 {activeFilter !== 'ALL' && (
                                     <span className="ml-2 text-sm font-normal text-indigo-600">
-                                        (Filtrado por {activeFilter === 'INVESTED' ? 'Valor Investido' : 
-                                                          activeFilter === 'EXPECTED' ? 'Valor Esperado' : 
-                                                          activeFilter === 'PAID' ? 'Valor Pago' : 
-                                                          activeFilter === 'TOTAL' ? 'Contratos Ativos' : 
-                                                          activeFilter === 'FINES' ? 'Multas' : ''})
+                                        (Filtrado por {activeFilter === 'INVESTED' ? 'Valor Investido' :
+                                            activeFilter === 'EXPECTED' ? 'Valor Esperado' :
+                                                activeFilter === 'PAID' ? 'Valor Pago' :
+                                                    activeFilter === 'TOTAL' ? 'Contratos Ativos' :
+                                                        activeFilter === 'FINES' ? 'Multas' : ''})
                                     </span>
                                 )}
                             </h2>
@@ -947,13 +976,12 @@ const Loans: React.FC = () => {
                                         <th
                                             key={column.id}
                                             scope="col"
-                                            className={`px-3 sm:px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                                                {
-                                                    left: 'text-left',
-                                                    center: 'text-center',
-                                                    right: 'text-right'
-                                                }[column.align || 'left']
-                                            }`}
+                                            className={`px-3 sm:px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${{
+                                                left: 'text-left',
+                                                center: 'text-center',
+                                                right: 'text-right'
+                                            }[column.align || 'left']
+                                                }`}
                                             style={{ width: column.width }}
                                         >
                                             {column.label}
@@ -976,9 +1004,9 @@ const Loans: React.FC = () => {
                                                     Nenhum empréstimo encontrado
                                                 </p>
                                                 <p className="text-xs sm:text-sm text-gray-400 mt-1">
-                                                    {searchTerm ? 'Tente pesquisar com outros termos' : 
-                                                     activeFilter !== 'ALL' ? 'Não há empréstimos para este filtro no período selecionado' : 
-                                                     'Selecione um período para visualizar empréstimos'}
+                                                    {searchTerm ? 'Tente pesquisar com outros termos' :
+                                                        activeFilter !== 'ALL' ? 'Não há empréstimos para este filtro no período selecionado' :
+                                                            'Selecione um período para visualizar empréstimos'}
                                                 </p>
                                                 {activeFilter !== 'ALL' && (
                                                     <button
@@ -998,13 +1026,12 @@ const Loans: React.FC = () => {
                                                 {visibleColumns.map((column: ColumnConfig) => (
                                                     <td
                                                         key={`${loan.id}-${column.id}`}
-                                                        className={`px-3 sm:px-4 py-3 text-sm ${
-                                                            {
-                                                                left: 'text-left',
-                                                                center: 'text-center',
-                                                                right: 'text-right'
-                                                            }[column.align || 'left']
-                                                        }`}
+                                                        className={`px-3 sm:px-4 py-3 text-sm ${{
+                                                            left: 'text-left',
+                                                            center: 'text-center',
+                                                            right: 'text-right'
+                                                        }[column.align || 'left']
+                                                            }`}
                                                     >
                                                         <div className={column.wrap ? 'whitespace-normal' : 'whitespace-nowrap'}>
                                                             {renderCellContent(loan, column)}
@@ -1030,6 +1057,36 @@ const Loans: React.FC = () => {
 
                                                         {user.role === 'ADMIN' && (
                                                             <>
+                                                                {/* Botão Payment Notice - Verde */}
+                                                                <button
+                                                                    onClick={() => handleDownloadPaymentNoticeClick(loan.id, loan.customer.fullName)}
+                                                                    className="text-emerald-600 hover:text-emerald-800 p-1.5 rounded hover:bg-emerald-50 disabled:opacity-50"
+                                                                    disabled={loadingStates.paymentNotice === loan.id}
+                                                                    title="Baixar notificação de pagamento"
+                                                                >
+                                                                    {loadingStates.paymentNotice === loan.id ? (
+                                                                        <FiLoader className="w-4 h-4 animate-spin" />
+                                                                    ) : (
+                                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                        </svg>
+                                                                    )}
+                                                                </button>
+
+                                                                {/* Botão Contract - Azul */}
+                                                                <button
+                                                                    onClick={() => handleDownloadContractClick(loan.id, loan.customer.fullName)}
+                                                                    className="text-blue-600 hover:text-blue-800 p-1.5 rounded hover:bg-blue-50 disabled:opacity-50"
+                                                                    disabled={loadingStates.contract === loan.id}
+                                                                    title="Baixar contrato"
+                                                                >
+                                                                    {loadingStates.contract === loan.id ? (
+                                                                        <FiLoader className="w-4 h-4 animate-spin" />
+                                                                    ) : (
+                                                                        <FiDownload className="w-4 h-4" />
+                                                                    )}
+                                                                </button>
+                                                                
                                                                 <DeleteModal
                                                                     text=""
                                                                     subtitles="Tem certeza de que deseja excluir este empréstimo?"
@@ -1044,27 +1101,7 @@ const Loans: React.FC = () => {
                                                                             setIsModalOpen
                                                                         )
                                                                     }
-                                                                    id={loan.id}/>
-
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleDownloadContract(
-                                                                            loan.id,
-                                                                            loan.customer.fullName,
-                                                                            apiUrl,
-                                                                            setLoadingId
-                                                                        )
-                                                                    }
-                                                                    className="text-blue-600 hover:text-blue-800 p-1.5 rounded hover:bg-blue-50 disabled:opacity-50"
-                                                                    disabled={loadingId === loan.id}
-                                                                    title="Baixar contrato"
-                                                                >
-                                                                    {loadingId === loan.id ? (
-                                                                        <FiLoader className="w-4 h-4 animate-spin" />
-                                                                    ) : (
-                                                                        <FiDownload className="w-4 h-4" />
-                                                                    )}
-                                                                </button>
+                                                                    id={loan.id} />
                                                             </>
                                                         )}
                                                     </div>
@@ -1144,11 +1181,10 @@ const Loans: React.FC = () => {
                                                                                                         setIsModalOpen,
                                                                                                     })
                                                                                                 }
-                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full hover:opacity-70 ${
-                                                                                                    inst.paid
-                                                                                                        ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                                                                                        : 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                                                                }`}
+                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full hover:opacity-70 ${inst.paid
+                                                                                                    ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                                                                                                    : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                                                                    }`}
                                                                                                 title={inst.paid ? 'Marcar como não pago' : 'Marcar como pago'}
                                                                                             >
                                                                                                 {inst.paid ? (
@@ -1159,11 +1195,10 @@ const Loans: React.FC = () => {
                                                                                             </button>
                                                                                         ) : (
                                                                                             <span
-                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${
-                                                                                                    inst.paid
-                                                                                                        ? 'bg-green-100 text-green-600'
-                                                                                                        : 'bg-red-100 text-red-600'
-                                                                                                }`}
+                                                                                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full ${inst.paid
+                                                                                                    ? 'bg-green-100 text-green-600'
+                                                                                                    : 'bg-red-100 text-red-600'
+                                                                                                    }`}
                                                                                             >
                                                                                                 {inst.paid ? (
                                                                                                     <FiCheckCircle className="w-4 h-4" />
