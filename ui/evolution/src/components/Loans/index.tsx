@@ -16,7 +16,7 @@ import {
     handleDownloadContract
 } from '../../utils/loans';
 import { Installment, Loan } from '../../@types/customer';
-import { calculateTotalFines } from '../../utils/loans/installmentsFines';
+import { calculateTotalFines, calculateInstallmentFine as calcInstallmentFineUtil } from '../../utils/loans/installmentsFines';
 import { markInstallmentAsPaid } from '../../utils/installments/fetchInstallments';
 
 interface ColumnConfig {
@@ -160,21 +160,6 @@ const Loans: React.FC = () => {
         return saved ? JSON.parse(saved) : initialColumns;
     });
 
-    // Função para calcular multa de uma parcela específica
-    const calculateInstallmentFine = (installment: Installment): number => {
-        if (installment.paid && installment.paymentDate) {
-            const dueDate = new Date(installment.dueDate);
-            const paymentDate = new Date(installment.paymentDate);
-            
-            if (paymentDate > dueDate) {
-                const daysLate = Math.ceil((paymentDate.getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
-                // Considerando multa de 2% ao dia (ajuste conforme sua regra de negócio)
-                return Number((installment.amount * 0.02 * daysLate).toFixed(2));
-            }
-        }
-        return 0;
-    };
-
     // Função para calcular os insights baseado no período selecionado
     const calculateInsights = (loansData: Loan[], period: string, customDate: string) => {
         let investedAmount = 0;
@@ -224,8 +209,6 @@ const Loans: React.FC = () => {
 
             // Verificar empréstimos com status PAID no período selecionado
             if (loan.status === 'PAID') {
-                // Verificar se o empréstimo foi pago no período selecionado
-                // Usando updatedAt como data de pagamento (ajuste conforme sua estrutura)
                 const paidDate = loan.updatedAt ? new Date(loan.updatedAt) : null;
                 
                 if (paidDate && paidDate.getMonth() === targetMonth && paidDate.getFullYear() === targetYear) {
@@ -234,14 +217,18 @@ const Loans: React.FC = () => {
                     
                     if (loan.installmentsList && loan.installmentsList.length > 0) {
                         loan.installmentsList.forEach((installment: Installment) => {
+                            // Usar o utilitário correto para calcular multa de parcela paga
                             if (installment.paid && installment.paymentDate) {
-                                const fine = calculateInstallmentFine(installment);
-                                totalFineForLoan += fine;
+                                const { fineAmount } = calcInstallmentFineUtil({
+                                    ...installment,
+                                    dueDate: new Date(installment.dueDate),
+                                    paid: true
+                                });
+                                totalFineForLoan += fineAmount;
                             }
                         });
                     }
                     
-                    // Usar balanceDue em vez de loanAmount para o valor pago
                     paidAmount += loan.balanceDue;
                     paidAmountWithFines += loan.balanceDue + totalFineForLoan;
                     totalFinesValue += totalFineForLoan;
@@ -265,20 +252,25 @@ const Loans: React.FC = () => {
                     // Calcular multa para parcelas pagas de empréstimos ACTIVOS
                     if (installment.paid && installment.paymentDate) {
                         const paymentDate = new Date(installment.paymentDate);
-                        const fine = calculateInstallmentFine(installment);
+                        
+                        // Usar o utilitário correto para calcular multa
+                        const { fineAmount } = calcInstallmentFineUtil({
+                            ...installment,
+                            dueDate: new Date(installment.dueDate),
+                            paid: true
+                        });
                         
                         // Se o pagamento da parcela foi no período selecionado E o empréstimo ainda está ACTIVO
-                        // (porque se estiver PAID, já foi contabilizado acima)
                         if (paymentDate.getMonth() === targetMonth && paymentDate.getFullYear() === targetYear && loan.status !== 'PAID') {
                             paidAmount += installment.amount;
-                            paidAmountWithFines += installment.amount + fine;
-                            totalFinesValue += fine;
+                            paidAmountWithFines += installment.amount + fineAmount;
+                            totalFinesValue += fineAmount;
                             
                             console.log('Parcela paga de empréstimo ativo:', {
                                 loanId: loan.id,
                                 installmentNumber: installment.installmentNumber,
                                 amount: installment.amount,
-                                fine: fine,
+                                fine: fineAmount,
                                 paymentDate: paymentDate.toISOString()
                             });
                         }
@@ -289,15 +281,22 @@ const Loans: React.FC = () => {
                         if (!installment.paid && loan.status === 'ACTIVE') {
                             expectedAmount += installment.amount;
                             
-                            // Calcular multa estimada se já estiver atrasada
-                            const today = new Date();
-                            if (today > dueDate) {
-                                const daysLate = Math.ceil((today.getTime() - dueDate.getTime()) / (1000 * 3600 * 24));
-                                const estimatedFine = Number((installment.amount * 0.02 * daysLate).toFixed(2));
-                                expectedAmountWithFines += installment.amount + estimatedFine;
-                            } else {
-                                expectedAmountWithFines += installment.amount;
-                            }
+                            // Usar o utilitário para calcular multa estimada
+                            const { fineAmount } = calcInstallmentFineUtil({
+                                ...installment,
+                                dueDate: new Date(installment.dueDate),
+                                paid: false
+                            });
+                            
+                            expectedAmountWithFines += installment.amount + fineAmount;
+                            
+                            console.log('Parcela a vencer no período:', {
+                                loanId: loan.id,
+                                installmentNumber: installment.installmentNumber,
+                                amount: installment.amount,
+                                estimatedFine: fineAmount,
+                                dueDate: dueDate.toISOString()
+                            });
                         }
                     }
                 });
@@ -940,7 +939,11 @@ const Loans: React.FC = () => {
                                                                     </thead>
                                                                     <tbody>
                                                                         {installments.map((inst, idx) => {
-                                                                            const fine = calculateInstallmentFine(inst);
+                                                                            const { fineAmount } = calcInstallmentFineUtil({
+                                                                                ...inst,
+                                                                                dueDate: new Date(inst.dueDate),
+                                                                                paid: inst.paid
+                                                                            });
                                                                             return (
                                                                                 <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                                                                     <td className="px-4 py-2 text-sm text-gray-600">
@@ -959,9 +962,9 @@ const Loans: React.FC = () => {
                                                                                         {formatCurrency(inst.amount)}
                                                                                     </td>
                                                                                     <td className="px-4 py-2 text-sm">
-                                                                                        {fine > 0 ? (
+                                                                                        {fineAmount > 0 ? (
                                                                                             <span className="text-orange-600 font-medium">
-                                                                                                {formatCurrency(fine)}
+                                                                                                {formatCurrency(fineAmount)}
                                                                                             </span>
                                                                                         ) : (
                                                                                             <span className="text-gray-400">-</span>
