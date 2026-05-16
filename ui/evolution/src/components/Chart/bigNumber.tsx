@@ -11,7 +11,7 @@ interface BigNumberProps {
 
 const BigNumber: React.FC<BigNumberProps> = ({ title, subtitles, value, icon }) => {
     return (
-        <div className="flex flex-col justify-between w-1/4 hover:shadow-2xl p-9 bg-white transition duration-1000 ease-in-out rounded-2xl shadow-lg">
+        <div className="flex flex-col justify-between w-full hover:shadow-2xl p-6 md:p-9 bg-white transition duration-1000 ease-in-out rounded-2xl shadow-lg">
             <div className="flex items-center space-x-2">
                 {icon}
                 <p className="text-lg leading-8 text-gray-600">{title}</p>

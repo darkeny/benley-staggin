@@ -160,8 +160,8 @@ const Chart: React.FC = () => {
 
     return (
         <>
-            <div className='mx-44'>
-                <div className="flex max-w-screen-2xl justify-between gap-6 py-10 mx-auto">
+            <div className='px-4 sm:px-6 lg:px-8 max-w-screen-2xl mx-auto'>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-10 w-full">
                     <BigNumber title="Total de Clientes" subtitles='Clientes' value={clients || 0} icon={<FaUsers className="text-blue-500" size={32} />} />
                     <BigNumber title="Total de Empréstimos" subtitles='Empréstimos' value={loans || 0} icon={<GiTakeMyMoney className="text-blue-500" size={35} />} />
                     <BigNumber title="Clientes Penhorados" subtitles='Penhorados' value={pawn} icon={<FaChessBishop className="text-blue-500" size={32} />} />

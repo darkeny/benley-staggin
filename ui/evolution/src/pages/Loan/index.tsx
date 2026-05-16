@@ -389,6 +389,15 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       <IoCheckmarkDoneOutline className="h-6 w-6 inline ml-2 text-green-500" />
                     )}
                   </button>
+                  {files.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-blue-600 font-medium">
+                      {files.map((file, idx) => (
+                        <span key={idx} className="bg-blue-50 px-2 py-1 rounded-md border border-blue-100 truncate max-w-[200px]">
+                          {file.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -413,6 +422,13 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       <IoCheckmarkDoneOutline className="h-6 w-6 inline ml-2 text-green-500" />
                     )}
                   </button>
+                  {incomeProof && (
+                    <div className="mt-2 text-xs text-blue-600 font-medium overflow-hidden">
+                      <span className="bg-blue-50 px-2 py-1 rounded-md border border-blue-100 block truncate max-w-[200px] w-max">
+                        {incomeProof.name}
+                      </span>
+                    </div>
+                  )}
                   <input
                     type="file"
                     ref={incomeProofRef}
