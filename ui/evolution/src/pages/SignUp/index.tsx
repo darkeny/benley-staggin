@@ -7,10 +7,12 @@ import { FaSpinner } from "react-icons/fa6";
 import { handleError } from "../../handleError";
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useAuth } from '../../auth';
 const apiUrl = import.meta.env.VITE_APP_API_URL;
 
 const SignUp: React.FC = () => {
     const navigate = useNavigate();
+    const { setAuth } = useAuth();
     const [formData, setFormData] = useState({
         fullName: "",
         birthDate: "",
@@ -124,41 +126,17 @@ const SignUp: React.FC = () => {
                 }
             });
 
-            if (response.status === 200) {
-                // Sucesso: exibe a mensagem de sucesso e abre o modal de sucesso
+            if (response.status === 200 || response.status === 201) {
+                const { token, generatedPassword } = response.data;
+                if (token) {
+                    setAuth(token);
+                }
+
                 setAlertText('Cliente cadastrado com sucesso!');
                 setIsModalSuccessOpen(true);
 
                 setTimeout(() => {
-                    navigate('/signin');
-                }, 3000);
-
-                // Limpar o formulário após sucesso
-                setFormData({
-                    fullName: "",
-                    birthDate: "",
-                    profession: "",
-                    email: "",
-                    contact: "",
-                    gender: "",
-                    marital_status: "",
-                    address: "",
-                    incomeSource: "",
-                    monthlyIncome: "",
-                    identityNumber: "",
-                    grantorName: "",
-                    grantorID: "",
-                    grantorContact: "",
-                });
-                setSelectedBank("");
-                setShowGrantorFields(false);
-            } else {
-                // Sucesso: exibe a mensagem de sucesso e abre o modal de sucesso
-                setAlertText('Cliente cadastrado com sucesso!');
-                setIsModalSuccessOpen(true);
-
-                setTimeout(() => {
-                    navigate('/signin');
+                    navigate('/mypanel', { state: { newClient: true, generatedPassword } });
                 }, 3000);
 
                 // Limpar o formulário após sucesso

@@ -15,6 +15,7 @@ const Panel: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState<'painel' | 'clients' | 'posts' | 'loans'>('painel');
     const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const renderContent = () => {
         if (activeTab === 'clients') {
             return <Clients />;
@@ -89,19 +90,50 @@ const Panel: React.FC = () => {
                                 </div>
                             </div>
                             <div className="-mr-2 flex md:hidden">
-                                <button type="button" className="relative inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" aria-controls="mobile-menu" aria-expanded="false">
+                                <button type="button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="relative inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" aria-controls="mobile-menu" aria-expanded="false">
                                     <span className="absolute -inset-0.5"></span>
                                     <span className="sr-only">Open main menu</span>
-                                    <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                    </svg>
-                                    <svg className="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
+                                    {mobileMenuOpen ? (
+                                        <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                        </svg>
+                                    )}
                                 </button>
                             </div>
                         </div>
                     </div>
+                    {/* SUPER MOBILE MENU (DRAWER) */}
+                    {mobileMenuOpen && (
+                        <div className="md:hidden fixed inset-0 z-[100] flex justify-end transition-all">
+                            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setMobileMenuOpen(false)}></div>
+                            <div className="relative w-72 max-w-[80vw] h-full bg-gray-800 shadow-2xl flex flex-col transform transition-transform">
+                                <div className="px-4 py-5 flex justify-between items-center border-b border-gray-700 bg-gray-900/50">
+                                    <img className="h-8 w-auto" src="/logo-benley.png" alt="Benley" />
+                                    <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
+                                    <a href="#" onClick={() => { setActiveTab('painel'); setMobileMenuOpen(false); }} className={`block rounded-lg px-4 py-3 text-base font-medium transition-colors ${activeTab === 'painel' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}>Painel</a>
+                                    <a href="#" onClick={() => { setActiveTab('clients'); setMobileMenuOpen(false); }} className={`block rounded-lg px-4 py-3 text-base font-medium transition-colors ${activeTab === 'clients' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}>Clientes</a>
+                                    <a href="#" onClick={() => { setActiveTab('loans'); setMobileMenuOpen(false); }} className={`block rounded-lg px-4 py-3 text-base font-medium transition-colors ${activeTab === 'loans' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}>Empréstimos</a>
+                                    <a href="#" onClick={() => { setActiveTab('posts'); setMobileMenuOpen(false); }} className={`block rounded-lg px-4 py-3 text-base font-medium transition-colors ${activeTab === 'posts' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}>Comunicação</a>
+                                </div>
+                                <div className="border-t border-gray-700 bg-gray-800/80 p-4">
+                                    <div className="space-y-2">
+                                        <a href="#" className="block w-full text-left px-4 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">Perfil</a>
+                                        <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors">Sign out</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </nav>
 
                 <header className="bg-white shadow">
@@ -109,8 +141,8 @@ const Panel: React.FC = () => {
                         <h1 className="text-2xl font-extralight text-gray-900">Benley Plataforma de Monitoramento</h1>
                     </div>
                 </header>
-                <main className='bg-gray-10'>
-                    <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8 ">
+                <main className='bg-gray-10 overflow-x-hidden relative'>
+                    <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
                         <div className="absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.200),white)] opacity-20"></div>
                         <div className="absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] bg-white shadow-xl shadow-indigo-600/10 ring-1 ring-indigo-50 sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-left"></div>
                         {/* <!-- Your content --> */}

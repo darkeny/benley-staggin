@@ -89,7 +89,7 @@ const ClientFinance: React.FC = () => {
                                     <h4 className="md:text-lg font-bold text-gray-700">Saldo Solicitado</h4>
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-bold text-gray-800">
+                            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
                                 {relevantLoan?.loanAmount ? `${relevantLoan.loanAmount} MT` : "Sem saldo"}
                             </h2>
                         </div>
@@ -115,7 +115,7 @@ const ClientFinance: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-bold">
+                            <h2 className="text-2xl md:text-3xl font-bold">
                                 {relevantLoan?.status === "ACTIVE" && balanceDue > 0
                                     ? `${balanceDue} MT`
                                     : 'Sem saldo'}
@@ -135,7 +135,7 @@ const ClientFinance: React.FC = () => {
                                     <p className="text-sm font-semibold">{savings.status}</p>
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-bold">
+                            <h2 className="text-2xl md:text-3xl font-bold">
                                 {savings.status === "ACTIVE" && savings.amount > 0
                                     ? `${savings.amount} MT`
                                     : 'Sem saldo'}

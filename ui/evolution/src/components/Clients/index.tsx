@@ -40,7 +40,6 @@ const Customers: React.FC = () => {
     const [showColumnConfig, setShowColumnConfig] = useState(false);
     const apiUrl = import.meta.env.VITE_APP_API_URL;
 
-    // Configuração inicial das colunas (todas visíveis exceto endereço)
     const initialColumns: ColumnConfig[] = [
         {
             id: 'statusBadge',
@@ -61,7 +60,7 @@ const Customers: React.FC = () => {
         {
             id: 'dateOfBirth',
             label: 'Nascimento',
-            visible: true,
+            visible: typeof window !== 'undefined' && window.innerWidth > 768,
             width: '110px',
             align: 'center',
             wrap: false
@@ -69,7 +68,7 @@ const Customers: React.FC = () => {
         {
             id: 'profession',
             label: 'Profissão',
-            visible: true,
+            visible: typeof window !== 'undefined' && window.innerWidth > 1024,
             width: '150px',
             align: 'left',
             wrap: true
@@ -77,7 +76,7 @@ const Customers: React.FC = () => {
         {
             id: 'incomeSource',
             label: 'Actividade',
-            visible: true,
+            visible: typeof window !== 'undefined' && window.innerWidth > 1024,
             width: '150px',
             align: 'left',
             wrap: true
@@ -93,7 +92,7 @@ const Customers: React.FC = () => {
         {
             id: 'marital_status',
             label: 'Estado Civil',
-            visible: true,
+            visible: typeof window !== 'undefined' && window.innerWidth > 1024,
             width: '120px',
             align: 'center',
             wrap: false
@@ -117,7 +116,7 @@ const Customers: React.FC = () => {
         {
             id: 'email',
             label: 'E-mail',
-            visible: true,
+            visible: typeof window !== 'undefined' && window.innerWidth > 768,
             width: '200px',
             align: 'left',
             wrap: false

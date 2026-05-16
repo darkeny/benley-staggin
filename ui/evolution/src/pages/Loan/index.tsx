@@ -296,7 +296,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                     />
                   </div>
                   {formData.installments > 0 && (
-                    <div className="flex-2 relative">
+                    <div className="flex-1 relative">
                       <label className="block text-sm font-medium text-gray-700">
                         Parcela Mensal (MZN)
                       </label>
@@ -395,7 +395,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                     accept="image/*"
                     multiple
                     onChange={(e) => handleFileChange(e, setFiles)}
-                    className="hidden"
+                    className="absolute opacity-0 -z-10 w-px h-px overflow-hidden"
                   />
                 </div>
                 {/* upload comprovativo de rendimentos */}
@@ -421,7 +421,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       const file = e.target.files?.[0] || null;
                       setIncomeProof(file);
                     }}
-                    className="hidden"
+                    className="absolute opacity-0 -z-10 w-px h-px overflow-hidden"
                   />
                 </div>
 
