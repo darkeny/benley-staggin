@@ -71,19 +71,17 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
 
   // atualizar prazo automaticamente
   useEffect(() => {
-    if (formData.installments > 0 || loanAmountValue > 0) {
-      const prazo =
-        formData.installments === 2
-          ? 60
-          : formData.installments === 3
-            ? 90
-            : loanAmountValue > 0
-              ? 30
-              : 0;
+    if (formData.installments > 0) {
+      const prazo = formData.installments * 30;
 
       setFormData((prev) => ({
         ...prev,
         paymentTerm: prazo,
+      }));
+    } else if (loanAmountValue > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        paymentTerm: 30,
       }));
     }
   }, [formData.installments, loanAmountValue]);
@@ -342,8 +340,13 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Número de Parcelas
                       </label>
-                      <div className="flex gap-4">
-                        {[2, 3].map((n) => (
+                      <div className="flex flex-wrap gap-4">
+                        {(loanAmountValue <= 50000 
+                          ? [2, 3] 
+                          : loanAmountValue <= 100000 
+                            ? [2, 3, 4, 5, 6] 
+                            : [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                        ).map((n) => (
                           <div key={n} className="flex items-center gap-2">
                             <input
                               id={`installment-${n}`}
@@ -363,7 +366,7 @@ const Loan: React.FC<LoanProps> = ({ simulador = false }) => {
                               htmlFor={`installment-${n}`}
                               className="text-sm font-medium text-gray-700"
                             >
-                              {n} parcelas
+                              {n} Parcelas
                             </label>
                           </div>
                         ))}

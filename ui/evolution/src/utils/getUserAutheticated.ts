@@ -43,7 +43,7 @@ const useFetchUserData = (skipAuth = false) => {
         });
         const userData = response.data.user;
 
-        if (userData.role === 'ADMIN') {
+        if (userData.role === 'ADMIN' || userData.role === 'MASTER') {
           setUser({
             name: userData.username,
             email: userData.email,

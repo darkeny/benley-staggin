@@ -43,8 +43,8 @@ const Chart: React.FC = () => {
 
     // Verificar se o usuário tem permissão para acessar a página
     useEffect(() => {
-        if (user.role && user.role !== 'ADMIN') {
-            navigate('/signin'); // Redirecionar para a página de login (ou qualquer outra) se o papel não for 'USER'
+        if (user.role && user.role !== 'ADMIN' && user.role !== 'MASTER') {
+            navigate('/signin'); // Redirecionar para a página de login se o papel não for autorizado
         }
     }, [user.role, navigate]);
 

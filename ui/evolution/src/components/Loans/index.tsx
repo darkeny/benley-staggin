@@ -37,10 +37,11 @@ interface InsightData {
     paidAmountWithFines: number;
     totalContractValue: number;
     totalFinesValue: number;
+    monthlyProfit: number;
     monthYear: string;
 }
 
-type FilterType = 'ALL' | 'INVESTED' | 'EXPECTED' | 'PAID' | 'TOTAL' | 'FINES';
+type FilterType = 'ALL' | 'INVESTED' | 'EXPECTED' | 'PAID' | 'TOTAL' | 'FINES' | 'PROFITS';
 
 const Loans: React.FC = () => {
     const navigate = useNavigate();
@@ -81,6 +82,7 @@ const Loans: React.FC = () => {
         paidAmountWithFines: 0,
         totalContractValue: 0,
         totalFinesValue: 0,
+        monthlyProfit: 0,
         monthYear: ''
     });
 
@@ -204,6 +206,7 @@ const Loans: React.FC = () => {
         let paidAmountWithFines = 0;
         let totalContractValue = 0;
         let totalFinesValue = 0;
+        let monthlyProfit = 0;
         let monthYear = '';
 
         const now = new Date();
@@ -290,8 +293,24 @@ const Loans: React.FC = () => {
                         }
                     }
 
-                    // Verificar parcelas com vencimento no período (não pagas)
+                    // Verificar parcelas com vencimento no período
                     if (dueDate.getMonth() === targetMonth && dueDate.getFullYear() === targetYear) {
+                        // Lucro pro-rata: (Valor da parcela - pro-rata do capital investido) + multa se paga
+                        // Pro-rata do capital = valor total investido / total de parcelas do empréstimo
+                        const proRataCapital = loan.loanAmount / (loan.installmentsList?.length || 1);
+                        const baseProfit = installment.amount - proRataCapital;
+                        
+                        if (installment.paid && installment.paymentDate) {
+                            const { fineAmount } = calcInstallmentFineUtil({
+                                ...installment,
+                                dueDate: new Date(installment.dueDate),
+                                paid: true
+                            });
+                            monthlyProfit += baseProfit + fineAmount;
+                        } else if (loan.status === 'ACTIVE') {
+                            monthlyProfit += baseProfit;
+                        }
+
                         if (!installment.paid && loan.status === 'ACTIVE') {
                             expectedAmount += installment.amount;
 
@@ -316,6 +335,7 @@ const Loans: React.FC = () => {
             paidAmountWithFines,
             totalContractValue,
             totalFinesValue,
+            monthlyProfit,
             monthYear: monthYear.charAt(0).toUpperCase() + monthYear.slice(1)
         });
     };
@@ -606,7 +626,7 @@ const Loans: React.FC = () => {
                 const count = loan.installmentsList.length;
                 return count === 0 ? "Nenhuma" : count === 1 ? "1 mês" : `${count} meses`;
             case 'status':
-                return user.role === 'ADMIN' ? (
+                return (user.role === 'ADMIN' || user.role === 'MASTER') ? (
                     <div className="relative inline-flex items-center">
                         {getStatusBadge(loan)}
                         <select
@@ -643,17 +663,30 @@ const Loans: React.FC = () => {
 
     // Função para determinar a classe do card baseado no filtro ativo
     const getCardClassName = (filterType: FilterType): string => {
-        const baseClass = "bg-white rounded-lg border p-4 shadow-sm transition-all cursor-pointer hover:shadow-md";
+        const baseClass = "bg-white rounded-2xl p-6 shadow-sm border border-slate-200 cursor-pointer hover:shadow-md transition-all border-l-4";
+        
+        const borderColors: Record<string, string> = {
+            ALL: 'border-l-indigo-500',
+            INVESTED: 'border-l-green-500',
+            EXPECTED: 'border-l-blue-500',
+            PAID: 'border-l-emerald-500',
+            TOTAL: 'border-l-purple-500',
+            FINES: 'border-l-orange-500',
+            PROFITS: 'border-l-amber-500'
+        };
+
+        const borderColor = borderColors[filterType] || 'border-l-slate-300';
+
         return activeFilter === filterType
-            ? `${baseClass} border-indigo-500 ring-2 ring-indigo-200 bg-indigo-50`
-            : `${baseClass} border-gray-200 hover:border-indigo-300`;
+            ? `${baseClass} ${borderColor} ring-2 ring-indigo-500/20 bg-indigo-50/30`
+            : `${baseClass} ${borderColor}`;
     };
 
     return (
         <>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 {/* Mini Dashboard - Insights - APENAS PARA ADMINISTRADORES */}
-                {user?.role === 'ADMIN' && (
+                {(user?.role === 'ADMIN' || user?.role === 'MASTER') && (
                     <div className="px-4 sm:px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                             <div className="flex items-center gap-2">
@@ -691,7 +724,7 @@ const Loans: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                             {/* Card - Valor Investido */}
                             <div
                                 className={getCardClassName('INVESTED')}
@@ -818,6 +851,35 @@ const Loans: React.FC = () => {
                                     </div>
                                     <div className="bg-purple-100 rounded-full p-2">
                                         <FiTrendingUp className="w-5 h-5 text-purple-600" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Card - Lucros Mensais */}
+                            <div
+                                className={getCardClassName('PROFITS')}
+                                onClick={() => handleCardClick('PROFITS')}
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-600 mb-1 flex items-center gap-1">
+                                            <FiTrendingUp className="w-4 h-4 text-amber-600" />
+                                            Lucro Mensal
+                                        </p>
+                                        <div className="flex flex-col">
+                                            <p className="text-2xl font-bold text-gray-900">
+                                                {formatCurrency(insights.monthlyProfit)}
+                                            </p>
+                                            <p className="text-[10px] text-amber-600 font-bold mt-1 uppercase tracking-tight">
+                                                Juros + Multas Pagas
+                                            </p>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                           Pro-rata mensal estimado
+                                        </p>
+                                    </div>
+                                    <div className="bg-amber-100 rounded-full p-2">
+                                        <FiTrendingUp className="w-5 h-5 text-amber-600" />
                                     </div>
                                 </div>
                             </div>
@@ -1055,7 +1117,7 @@ const Loans: React.FC = () => {
                                                             <FiEye className="w-4 h-4" />
                                                         </button>
 
-                                                        {user.role === 'ADMIN' && (
+                                                        {(user.role === 'ADMIN' || user.role === 'MASTER') && (
                                                             <>
                                                                 {/* Botão Payment Notice - Verde */}
                                                                 <button
@@ -1148,8 +1210,17 @@ const Loans: React.FC = () => {
                                                                                             1: 'Primeira',
                                                                                             2: 'Segunda',
                                                                                             3: 'Terceira',
+                                                                                            4: 'Quarta',
+                                                                                            5: 'Quinta',
+                                                                                            6: 'Sexta',
+                                                                                            7: 'Sétima',
+                                                                                            8: 'Oitava',
+                                                                                            9: 'Nona',
+                                                                                            10: 'Décima',
+                                                                                            11: 'Décima primeira',
+                                                                                            12: 'Décima segunda',
                                                                                         }[inst.installmentNumber] || `${inst.installmentNumber}ª`}
-                                                                                    </td>
+                                                                                     </td>
                                                                                     <td className="px-4 py-2 text-sm text-gray-600">
                                                                                         {inst.dueDate instanceof Date
                                                                                             ? inst.dueDate.toLocaleDateString('pt-BR')
@@ -1171,7 +1242,7 @@ const Loans: React.FC = () => {
                                                                                         {inst.paymentDate ? new Date(inst.paymentDate).toLocaleDateString('pt-BR') : '-'}
                                                                                     </td>
                                                                                     <td className="px-4 py-2 text-sm text-center">
-                                                                                        {user.role === 'ADMIN' ? (
+                                                                                        {(user.role === 'ADMIN' || user.role === 'MASTER') ? (
                                                                                             <button
                                                                                                 onClick={() =>
                                                                                                     markInstallmentAsPaid(inst.id, installments, {
