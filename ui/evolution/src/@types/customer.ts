@@ -5,11 +5,19 @@ export interface Installment {
   installmentNumber: number;
   dueDate: Date;
   amount: number;
+  amountPaid: number;
   fine?: number; // multa da parcela
   paid: boolean;
 }
 
 export type LoanStatus = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'PAID';
+
+export interface AdvancePayment {
+  id: string;
+  amount: number;
+  paymentDate: string;
+  paymentMethod: string;
+}
 
 export interface Loan {
   [x: string]: any;
@@ -21,7 +29,9 @@ export interface Loan {
   accountNumber: string;
   collateral: string;
   pawn: string;
-  installments: Installment[]; // agora é um array de parcelas
+  installments: Installment[];
+  installmentsList: Installment[];
+  advancePayments?: AdvancePayment[];
   status: LoanStatus; 
   activatedAt: Date;
   customerId: string;
