@@ -31,7 +31,11 @@ interface Notification {
   id: string;
   amount: number;
   dueDate: string;
+  alertStatus: 'OVERDUE' | 'TODAY' | 'UPCOMING';
   loan: {
+    loanAmount: number;
+    paymentMethod: string;
+    accountNumber: string;
     customer: {
       fullName: string;
     }
@@ -88,7 +92,40 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ activeTab, setActiveTa
     });
   };
 
+  const getStatusConfig = (status: 'OVERDUE' | 'TODAY' | 'UPCOMING') => {
+    switch (status) {
+      case 'OVERDUE':
+        return {
+          label: 'Em atraso',
+          bgColor: 'bg-red-50',
+          textColor: 'text-red-700',
+          borderColor: 'border-red-100',
+          iconColor: 'bg-red-100 text-red-600',
+          badge: 'bg-red-500'
+        };
+      case 'TODAY':
+        return {
+          label: 'Hoje',
+          bgColor: 'bg-amber-50',
+          textColor: 'text-amber-700',
+          borderColor: 'border-amber-100',
+          iconColor: 'bg-amber-100 text-amber-600',
+          badge: 'bg-amber-500'
+        };
+      default:
+        return {
+          label: '',
+          bgColor: 'bg-indigo-50',
+          textColor: 'text-indigo-700',
+          borderColor: 'border-indigo-100',
+          iconColor: 'bg-indigo-100 text-indigo-600',
+          badge: 'bg-indigo-500'
+        };
+    }
+  };
+
   if (loading) {
+// ... existing loading logic ...
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -152,34 +189,54 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ activeTab, setActiveTa
                       <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                         <h3 className="text-sm font-bold text-slate-800">Notificações de Pagamentos</h3>
                         <span className="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                          Próximos 5-10 dias
+                          Alertas Gerais
                         </span>
                       </div>
                       
-                      <div className="max-h-[400px] overflow-y-auto">
+                      <div className="max-h-[450px] overflow-y-auto">
                         {notifications.length > 0 ? (
-                          notifications.map((notif) => (
-                            <div key={notif.id} className="px-5 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
-                              <div className="flex items-start gap-4">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                                  <FiCalendar className="h-4 w-4" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-bold text-slate-900">{notif.loan.customer.fullName}</p>
-                                  <div className="mt-1 flex flex-col gap-1">
-                                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                      <FiCalendar className="w-3 h-3" />
-                                      <span>Vence em: {formatDate(notif.dueDate)}</span>
+                          notifications.map((notif) => {
+                            const config = getStatusConfig(notif.alertStatus);
+                            return (
+                              <div key={notif.id} className={`px-5 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors ${config.bgColor}/30`}>
+                                <div className="flex items-start gap-4">
+                                  <div className={`p-2 rounded-xl ${config.iconColor}`}>
+                                    <FiCalendar className="h-4 w-4" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <p className="text-sm font-bold text-slate-900">{notif.loan?.customer?.fullName || 'Cliente Desconhecido'}</p>
+                                      {config.label && (
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold text-white ${config.badge}`}>
+                                          {config.label}
+                                        </span>
+                                      )}
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                                      <FiDollarSign className="w-3 h-3" />
-                                      <span>Valor: {notif.amount.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}</span>
+                                    <div className="mt-2 flex flex-col gap-1.5">
+                                      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                        <FiCalendar className="w-3.5 h-3.5" />
+                                        <span>Vencimento: <span className="font-medium text-slate-700">{formatDate(notif.dueDate)}</span></span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                        <FiDollarSign className="w-3.5 h-3.5" />
+                                        <span>Valor: <span className="font-bold text-emerald-600">{(notif.amount || 0).toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}</span></span>
+                                      </div>
+                                      
+                                      {/* Informações adicionais */}
+                                      <div className="mt-1 pt-1.5 border-t border-slate-100 flex flex-wrap gap-x-3 gap-y-1">
+                                        <span className="text-[10px] text-slate-400">
+                                          Total: {(notif.loan?.loanAmount || 0).toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400">
+                                          {notif.loan?.paymentMethod || 'N/A'}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          ))
+                            );
+                          })
                         ) : (
                           <div className="px-5 py-8 text-center">
                             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-3">
