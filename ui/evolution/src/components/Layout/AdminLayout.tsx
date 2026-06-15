@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../../auth';
 import { useFetchUserData } from '../../utils';
 import { 
@@ -13,7 +14,10 @@ import {
   FiBell,
   FiUser,
   FiSettings,
-  FiChevronDown
+  FiChevronDown,
+  FiInfo,
+  FiCalendar,
+  FiDollarSign
 } from 'react-icons/fi';
 
 interface AdminLayoutProps {
@@ -23,11 +27,25 @@ interface AdminLayoutProps {
   title: string;
 }
 
+interface Notification {
+  id: string;
+  amount: number;
+  dueDate: string;
+  loan: {
+    customer: {
+      fullName: string;
+    }
+  }
+}
+
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ activeTab, setActiveTab, children, title }) => {
   const { logout } = useAuth();
   const { user, loading } = useFetchUserData();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifMenuOpen, setNotifMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const apiUrl = import.meta.env.VITE_APP_API_URL;
 
   const navigation = [
     { name: 'Dashboard', id: 'painel' as const, icon: FiGrid },
@@ -37,10 +55,37 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ activeTab, setActiveTa
     { name: 'Configurações', id: 'master' as const, icon: FiSettings, role: 'MASTER' },
   ];
 
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/installments/upcoming`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+        setNotifications(response.data.payload);
+      } catch (err) {
+        console.error('Erro ao buscar notificações:', err);
+      }
+    };
+
+    if (user?.role === 'ADMIN' || user?.role === 'MASTER') {
+      fetchNotifications();
+    }
+  }, [apiUrl, user?.role]);
+
   const filteredNavigation = navigation.filter(item => !item.role || item.role === user?.role || user?.role === 'MASTER');
 
   const handleSignOut = () => {
     logout();
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-MZ', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
   };
 
   if (loading) {
@@ -86,10 +131,80 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ activeTab, setActiveTa
 
             {/* Right Side Icons */}
             <div className="flex items-center gap-2 sm:gap-4">
-              <button className="relative p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-full hover:bg-white/10 hidden sm:block">
-                <FiBell className="h-5 w-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-[#0a0f1c]"></span>
-              </button>
+              {/* Notification Bell */}
+              <div className="relative">
+                <button 
+                  onClick={() => setNotifMenuOpen(!notifMenuOpen)}
+                  className="relative p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-full hover:bg-white/10 hidden sm:block overflow-visible"
+                >
+                  <FiBell className="h-5 w-5" />
+                  {notifications.length > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 rounded-full border border-[#0a0f1c] text-[10px] flex items-center justify-center font-bold text-white leading-none">
+                      {notifications.length}
+                    </span>
+                  )}
+                </button>
+
+                {notifMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setNotifMenuOpen(false)}></div>
+                    <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 p-0 z-50 transform origin-top-right transition-all overflow-hidden">
+                      <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-slate-800">Notificações de Pagamentos</h3>
+                        <span className="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                          Próximos 5-10 dias
+                        </span>
+                      </div>
+                      
+                      <div className="max-h-[400px] overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((notif) => (
+                            <div key={notif.id} className="px-5 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
+                              <div className="flex items-start gap-4">
+                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                                  <FiCalendar className="h-4 w-4" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-bold text-slate-900">{notif.loan.customer.fullName}</p>
+                                  <div className="mt-1 flex flex-col gap-1">
+                                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                      <FiCalendar className="w-3 h-3" />
+                                      <span>Vence em: {formatDate(notif.dueDate)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                                      <FiDollarSign className="w-3 h-3" />
+                                      <span>Valor: {notif.amount.toLocaleString('pt-MZ', { style: 'currency', currency: 'MZN' })}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-5 py-8 text-center">
+                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-3">
+                              <FiBell className="w-6 h-6" />
+                            </div>
+                            <p className="text-sm text-slate-500 font-medium">Sem pagamentos próximos nos próximos 10 dias.</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="px-5 py-3 bg-slate-50 text-center border-t border-slate-100">
+                        <button 
+                          onClick={() => {
+                            setActiveTab('loans');
+                            setNotifMenuOpen(false);
+                          }}
+                          className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                        >
+                          Ver Todos Empréstimos
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* User Dropdown */}
               <div className="relative ml-2">
