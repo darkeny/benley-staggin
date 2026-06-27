@@ -32,10 +32,13 @@ export const calculateInstallmentFine = (
   const delayInMs = today.getTime() - dueDate.getTime();
   const delayInDays = Math.max(Math.ceil(delayInMs / (1000 * 60 * 60 * 24)), 0);
 
+  // O valor base para a multa é o valor original da parcela (valor atual + valor já pago antecipadamente)
+  const baseAmount = installment.amount + (installment.amountPaid || 0);
+
   // Calcula a multa
   let fine = 0;
-  if (delayInDays > 0 && delayInDays <= 5) fine = parseFloat((installment.amount * 0.1).toFixed(2));
-  else if (delayInDays > 5) fine = parseFloat((installment.amount * 0.3).toFixed(2));
+  if (delayInDays > 0 && delayInDays <= 5) fine = parseFloat((baseAmount * 0.1).toFixed(2));
+  else if (delayInDays > 5) fine = parseFloat((baseAmount * 0.3).toFixed(2));
 
   return {
     fineAmount: fine,
@@ -60,8 +63,8 @@ export const calculateTotalFines = (
     installments.length > 0
       ? installments
       : fallbackAmount && fallbackDueDate
-      ? [{ amount: fallbackAmount, dueDate: fallbackDueDate, paid: false }]
-      : [];
+        ? [{ amount: fallbackAmount, dueDate: fallbackDueDate, paid: false }]
+        : [];
 
   const updatedInstallments = effectiveInstallments.map(inst => {
     const { fineAmount, daysDelayed } = calculateInstallmentFine(inst);
